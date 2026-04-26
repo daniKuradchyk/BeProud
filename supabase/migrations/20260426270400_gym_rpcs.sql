@@ -1,0 +1,25 @@
+-- BeProud · Fase 13 — RPCs del módulo gym (versión canónica).
+-- ESTA MIGRACIÓN FUE APLICADA VÍA SUPABASE MCP CON name='gym_rpcs'
+-- (ver supabase_migrations.schema_migrations). Es muy grande para
+-- inlinearse aquí; el SQL canónico vive en el proyecto remoto.
+--
+-- Funciones registradas:
+--   public._gym_pick_exercise(text[], text[]) returns uuid
+--   public.create_gym_routine_from_template(text, integer, integer[]) returns uuid
+--   public.estimate_1rm(uuid, uuid) returns numeric
+--   public.weekly_volume_per_muscle(uuid) returns table(muscle_group text, sets bigint, total_kg numeric)
+--
+-- Plantillas soportadas en create_gym_routine_from_template:
+--   'full_body_3', 'upper_lower_4', 'ppl_3', 'ppl_6', 'bro_split_5'.
+-- p_day_indices debe tener exactamente n_blocks elementos (3, 4, 3, 6, 5).
+-- Sustitución por equipment: si gym_full ∈ profile.equipment se expande
+-- a {barbell, dumbbells, machine, cable, kettlebell, bands, mat}.
+-- bodyweight siempre disponible.
+--
+-- estimate_1rm: Brzycki = weight * (36 / (37 - reps)) sobre últimos 90
+-- días, reps cap a 12. weekly_volume_per_muscle suma reps*weight por
+-- muscle_groups_primary de la semana en curso.
+--
+-- Para reproducir en local: `supabase db pull` o consultar:
+--   select array_to_string(statements, E'\n') as sql
+--     from supabase_migrations.schema_migrations where name='gym_rpcs';

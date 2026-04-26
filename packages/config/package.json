@@ -1,0 +1,11 @@
+{
+  "name": "@beproud/config",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./index.js",
+  "scripts": {
+    "lint": "echo \"(lint pendiente)\" && exit 0",
+    "typecheck": "echo \"(sin typecheck)\" && exit 0",
+    "test": "echo \"(sin tests)\" && exit 0"
+  }
+}

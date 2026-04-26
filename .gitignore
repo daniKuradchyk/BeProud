@@ -1,0 +1,52 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Builds
+dist/
+build/
+.expo/
+.expo-shared/
+web-build/
+*.apk
+*.aab
+*.ipa
+
+# Entornos
+.env
+.env.local
+.env.*.local
+
+# Supabase
+supabase/.branches/
+supabase/.temp/
+
+# EAS
+.eas/
+
+# Logs y cachés
+*.log
+.turbo/
+.next/
+.cache/
+coverage/
+
+# OS y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+
+# TypeScript
+*.tsbuildinfo
+
+# Sandbox legacy con anon key hardcoded (decisión pendiente: limpiar HTML o eliminar)
+web-preview/
+
+# Configuración local de agentes IA (Claude Code, JetBrains Junie)
+.agents/
+.claude/
+.junie/

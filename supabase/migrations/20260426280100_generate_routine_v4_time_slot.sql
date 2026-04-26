@@ -1,0 +1,10 @@
+-- BeProud · Fase 14 — generate_routine v4 con time_slot.
+-- Igual a v3, pero al insertar en routine_tasks asigna time_slot por categoría
+-- usando el mismo mapping del backfill (incluido el fallback final).
+-- Aplicada vía Supabase MCP con name='generate_routine_v4_time_slot'.
+-- El SQL canónico vive en supabase_migrations.schema_migrations.
+--
+-- Reproducir: supabase db pull, o:
+--   select array_to_string(statements, E'\n')
+--     from supabase_migrations.schema_migrations
+--    where name = 'generate_routine_v4_time_slot';

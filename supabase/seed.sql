@@ -1,0 +1,10 @@
+-- BeProud · Seed local
+--
+-- El catálogo de tareas (80 entradas) se siembra desde la migración
+-- 20260425083544_seed_tasks_catalog.sql, idempotente vía slug.
+-- Por eso este archivo está vacío: cualquier `supabase db reset` aplicará
+-- la migración y dejará el catálogo poblado sin duplicados.
+--
+-- Si en el futuro necesitas datos de prueba (usuarios fake, completions
+-- de ejemplo, etc.), añádelos aquí. Las MIGRACIONES no deben llevar
+-- datos de ejemplo, solo el catálogo canónico.

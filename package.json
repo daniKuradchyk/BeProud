@@ -1,0 +1,40 @@
+{
+  "name": "beproud",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter @beproud/mobile dev",
+    "dev:web": "pnpm --filter @beproud/mobile dev:web",
+    "dev:ios": "pnpm --filter @beproud/mobile dev:ios",
+    "dev:android": "pnpm --filter @beproud/mobile dev:android",
+    "build:web": "pnpm --filter @beproud/mobile build:web",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:types": "supabase gen types typescript --project-id hupgxfrijdnphltpbcnd --schema public > packages/api/src/database.types.ts",
+    "supabase:functions:serve": "supabase functions serve",
+    "supabase:functions:deploy": "supabase functions deploy",
+    "eas:build:ios": "cd apps/mobile && eas build --platform ios --profile preview",
+    "eas:build:android": "cd apps/mobile && eas build --platform android --profile preview",
+    "eas:submit:ios": "cd apps/mobile && eas submit --platform ios"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3",
+    "prettier": "3.3.3",
+    "eslint": "9.14.0",
+    "typescript-eslint": "^8.15.0",
+    "globals": "^15.12.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

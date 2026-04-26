@@ -1,0 +1,20 @@
+-- BeProud · Fase 13 — seed de 57 ejercicios canónicos.
+-- ESTA MIGRACIÓN ES MUY GRANDE Y FUE APLICADA VÍA SUPABASE MCP CON
+-- name='gym_exercises_seed' (ver supabase_migrations.schema_migrations).
+--
+-- Para reproducirla en local desde cero:
+--   1) `supabase db pull` extrae el SQL completo desde el proyecto remoto, o
+--   2) consulta:
+--        select array_to_string(statements, E'\n') as sql
+--          from supabase_migrations.schema_migrations where name='gym_exercises_seed';
+--
+-- Cobertura: chest 8, back 10, shoulders 7, arms 8, legs 12,
+-- glutes 5, core 10. Total 57 (algunos comparten muscle_groups en
+-- secundarios). UPSERT por slug. Cada fila incluye instructions
+-- detalladas, common_mistakes (4-6 puntos), muscle_groups precisos,
+-- equipment, difficulty 1-5, contraindications, evidence_level y
+-- references_text (DOIs cuando aplica).
+--
+-- Si reseteas la BBDD local con `pnpm supabase:reset` necesitas el SQL
+-- completo. Mantén un mirror sincronizado con `supabase db pull` antes
+-- del reset.

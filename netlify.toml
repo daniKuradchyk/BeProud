@@ -1,0 +1,23 @@
+[build]
+  command  = "pnpm install --frozen-lockfile && pnpm --filter @beproud/mobile build:web"
+  publish  = "apps/mobile/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  PNPM_VERSION = "9"
+
+# SPA routing: cualquier ruta no encontrada cae al index.html del bundle Expo
+# Router. Sin esto, Netlify devuelve 404 cuando el user llega por enlace
+# directo a /legal/privacy.
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# Cabeceras de seguridad básicas.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options        = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"

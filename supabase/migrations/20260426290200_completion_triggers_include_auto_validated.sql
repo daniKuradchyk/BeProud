@@ -1,0 +1,14 @@
+-- BeProud · Fase 15 — los triggers/funciones de Fase 8 que filtran por
+-- ai_validation_status in ('valid','skipped') deben aceptar también
+-- 'auto_validated' para que las sesiones de estudio cuenten para racha,
+-- achievements y leaderboards. bump_user_points NO filtra por status.
+--
+-- Aplicada vía Supabase MCP. SQL canónico en supabase_migrations.schema_migrations.
+-- Reproducir local: supabase db pull, o select array_to_string(statements, E'\n')
+--   from supabase_migrations.schema_migrations where name = 'completion_triggers_include_auto_validated';
+--
+-- Funciones afectadas:
+--   public.check_completion_achievements()   ← añade 'auto_validated' al filtro
+--   public.update_streak_on_completion()     ← idem
+--   public.current_streak(uuid)              ← idem en su CTE de days
+--   public.refresh_weekly_leaderboards()     ← idem en weekly_points y weekly_group_points

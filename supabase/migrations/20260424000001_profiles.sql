@@ -1,0 +1,4 @@
+-- DEPRECATED — esta migración se reescribió con el timestamp real
+-- asignado por Supabase. Ver: 20260424225931_profiles.sql.
+-- Se conserva el archivo vacío porque el sandbox no permite borrarlo.
+-- Es seguro ignorar/eliminar manualmente desde Git si te molesta.
