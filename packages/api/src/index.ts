@@ -107,15 +107,25 @@ export {
   fetchActiveRoutine,
   addRoutineTask,
   removeRoutineTask,
+  removeRoutineTasksBySlot,
   updateRoutineTaskFrequency,
   updateRoutineTaskTimeSlot,
   reorderRoutineTasks,
+  applyWizardProposal,
+  ensureActiveRoutine,
   needsRoutineSetup,
   type Routine,
   type RoutineTask,
   type RoutineTaskWithCatalog,
   type ActiveRoutine,
 } from './routines';
+
+export {
+  createUserTask,
+  fetchMyUserTasks,
+  deleteUserTask,
+  type UserTask,
+} from './userTasks';
 
 export {
   uploadTaskPhoto,

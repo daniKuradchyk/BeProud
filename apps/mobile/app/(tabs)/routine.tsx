@@ -118,6 +118,34 @@ export default function RoutineScreen() {
   const totalToday = tasks.length;
   const doneToday = completedToday.size;
 
+  // Empty state: rutina sin diseñar — Fase 15 lleva a /routine-design.
+  if (tasks.length === 0) {
+    return (
+      <Screen scroll>
+        <View className="flex-1 items-center justify-center px-6 py-12">
+          <Text className="mb-3 text-5xl">🎯</Text>
+          <Text className="mb-2 text-center text-2xl font-extrabold text-white">
+            Aún no has diseñado tu rutina
+          </Text>
+          <Text className="mb-6 text-center text-sm text-brand-200">
+            Te llevamos a diseñarla por bloques. Empieza por la mañana, sigue por la
+            tarde y termina con la noche.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Diseñar mi rutina"
+            onPress={() => router.push('/routine-design' as never)}
+            className="rounded-full bg-brand-300 px-6 py-3 active:bg-brand-200"
+          >
+            <Text className="text-base font-extrabold text-brand-900">
+              Diseñar mi rutina
+            </Text>
+          </Pressable>
+        </View>
+      </Screen>
+    );
+  }
+
   // Agrupación por slot, manteniendo orden global de position.
   const tasksBySlot: Record<TimeSlot, RoutineTaskWithCatalog[]> = {
     morning: [], afternoon: [], evening: [], anytime: [],
@@ -267,7 +295,7 @@ export default function RoutineScreen() {
         onPick={async (task, timeSlot) => {
           setError(null);
           try {
-            await addRoutineTask(routine.id, task.id, { timeSlot });
+            await addRoutineTask(routine.id, { taskId: task.id }, { timeSlot });
             await refreshRoutine();
           } catch (e) {
             setError(e instanceof Error ? e.message : 'No se pudo añadir');

@@ -5,31 +5,18 @@ import Screen from '@/components/Screen';
 import Button from '@/components/Button';
 import WizardHeader from '@/components/WizardHeader';
 import { useSession } from '@/lib/session';
-import { generateRoutine } from '@beproud/api';
 
 export default function Step1Welcome() {
   const router = useRouter();
-  const { profile, refreshRoutine } = useSession();
+  const { profile } = useSession();
 
-  // Solo en desarrollo: saltarse el wizard con valores razonables.
+  // Solo en desarrollo: saltarse el wizard. Fase 15: la rutina ya no se
+  // auto-genera; el dev-skip lleva directo al diseño guiado por bloques.
   const skip =
     typeof __DEV__ !== 'undefined' && __DEV__
       ? {
           label: 'Saltar (dev)',
-          onPress: async () => {
-            try {
-              await generateRoutine({
-                goals: ['fitness', 'study'],
-                availability: 'medium',
-                level: 'beginner',
-                preferences: { categories: ['fitness', 'study'] },
-              });
-              await refreshRoutine();
-              // El RouteGuard nos llevará a /(tabs)/routine.
-            } catch (e) {
-              console.warn('[onboarding] skip failed', e);
-            }
-          },
+          onPress: () => router.replace('/routine-design' as never),
         }
       : undefined;
 

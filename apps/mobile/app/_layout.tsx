@@ -65,14 +65,14 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
 
   // Redirige según el estado de la sesión.
   // - needs_onboarding solo respeta la pantalla `complete-profile`.
-  // - needs_routine_setup solo respeta las pantallas del wizard (step-N).
+  // - needs_routine_setup respeta el wizard de onboarding (step-N) y la
+  //   pantalla de diseño guiado por bloques (/routine-design — Fase 15).
   // - authenticated nunca debería estar en (auth) ni (onboarding).
-  // Cualquier otra ruta autenticada (post, user, messages, group, settings…)
-  // se respeta tal cual.
   useEffect(() => {
     if (status === 'loading') return;
     const inAuth = segments[0] === '(auth)';
     const inOnboarding = segments[0] === '(onboarding)';
+    const inRoutineDesign = (segments[0] as string) === 'routine-design';
     const onboardingScreen = inOnboarding ? segments[1] : null;
     const inCompleteProfile = onboardingScreen === 'complete-profile';
     const inRoutineWizard =
@@ -82,8 +82,12 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
       router.replace('/(auth)/login');
     } else if (status === 'needs_onboarding' && !inCompleteProfile) {
       router.replace('/(onboarding)/complete-profile');
-    } else if (status === 'needs_routine_setup' && !inRoutineWizard) {
-      router.replace('/(onboarding)/step-1-welcome');
+    } else if (
+      status === 'needs_routine_setup' &&
+      !inRoutineWizard &&
+      !inRoutineDesign
+    ) {
+      router.replace('/routine-design' as never);
     } else if (status === 'authenticated' && (inAuth || inOnboarding)) {
       router.replace('/(tabs)/routine');
     }

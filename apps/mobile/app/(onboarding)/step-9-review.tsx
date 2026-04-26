@@ -4,9 +4,10 @@ import { Text, View } from 'react-native';
 import Screen from '@/components/Screen';
 import Button from '@/components/Button';
 import WizardHeader from '@/components/WizardHeader';
+import { useRouter } from 'expo-router';
 import { useOnboarding } from '@/lib/onboarding';
 import { useSession } from '@/lib/session';
-import { generateRoutine, updateBiometrics } from '@beproud/api';
+import { updateBiometrics } from '@beproud/api';
 import {
   TASK_CATEGORY_LABELS,
   PRIMARY_GOAL_LABELS,
@@ -36,6 +37,7 @@ const LEVEL_LABELS = {
 } as const;
 
 export default function Step9Review() {
+  const router = useRouter();
   const {
     asAnswers, reset,
     goals, preferenceCategories, availability, level,
@@ -73,7 +75,8 @@ export default function Step9Review() {
     }
     setLoading(true);
     try {
-      // 1) Persistimos biometría para que el RPC la lea desde profile.
+      // Persistimos biometría. La rutina ya NO se auto-genera aquí — Fase 15:
+      // el usuario diseña su día por bloques en /routine-design.
       await updateBiometrics({
         birth_date:     birthDate ?? null,
         biological_sex: biologicalSex ?? null,
@@ -85,13 +88,11 @@ export default function Step9Review() {
         equipment:      equipment as Equipment[],
         restrictions:   restrictions as Restriction[],
       });
-      // 2) Genera rutina.
-      await generateRoutine(answers);
-      // 3) Refresca caches y deja al RouteGuard llevar a /(tabs)/routine.
       await Promise.all([refreshProfile(), refreshRoutine()]);
       reset();
+      router.replace('/routine-design' as never);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo generar la rutina.');
+      setError(e instanceof Error ? e.message : 'No se pudo guardar tu perfil.');
     } finally {
       setLoading(false);
     }

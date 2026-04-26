@@ -20,6 +20,7 @@ export default function SettingsIndex() {
       title: 'Tu cuenta',
       rows: [
         { label: 'Datos biométricos', hint: 'Peso, altura, equipo, objetivo', emoji: '📏', onPress: () => router.push('/settings/biometrics' as never) },
+        { label: 'Rediseñar mi rutina', hint: 'Ajusta tus bloques de mañana, tarde y noche', emoji: '🧩', onPress: () => router.push('/routine-design' as never) },
         { label: 'Notificaciones', hint: 'Tipos, horario y avisos',  emoji: '🔔', onPress: () => router.push('/settings/notifications' as never) },
         { label: 'Privacidad',     hint: 'Cuenta privada, bloqueos', emoji: '🔒', onPress: () => router.push('/settings/privacy' as never) },
         { label: 'Cuenta',         hint: 'Email, contraseña, eliminar', emoji: '👤', onPress: () => router.push('/settings/account' as never) },

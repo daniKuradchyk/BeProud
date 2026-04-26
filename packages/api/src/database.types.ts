@@ -937,8 +937,9 @@ export type Database = {
           position: number
           routine_id: string
           target_frequency: string
-          task_id: string
+          task_id: string | null
           time_slot: string
+          user_task_id: string | null
         }
         Insert: {
           created_at?: string
@@ -947,8 +948,9 @@ export type Database = {
           position?: number
           routine_id: string
           target_frequency?: string
-          task_id: string
+          task_id?: string | null
           time_slot?: string
+          user_task_id?: string | null
         }
         Update: {
           created_at?: string
@@ -957,8 +959,9 @@ export type Database = {
           position?: number
           routine_id?: string
           target_frequency?: string
-          task_id?: string
+          task_id?: string | null
           time_slot?: string
+          user_task_id?: string | null
         }
         Relationships: [
           {
@@ -973,6 +976,13 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_tasks_user_task_id_fkey"
+            columns: ["user_task_id"]
+            isOneToOne: false
+            referencedRelation: "user_tasks"
             referencedColumns: ["id"]
           },
         ]
@@ -1070,6 +1080,13 @@ export type Database = {
             referencedRelation: "routine_tasks"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "study_sessions_routine_task_id_fkey"
+            columns: ["routine_task_id"]
+            isOneToOne: false
+            referencedRelation: "routine_tasks_resolved"
+            referencedColumns: ["id"]
+          },
         ]
       }
       task_completions: {
@@ -1118,6 +1135,13 @@ export type Database = {
             columns: ["routine_task_id"]
             isOneToOne: false
             referencedRelation: "routine_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_completions_routine_task_id_fkey"
+            columns: ["routine_task_id"]
+            isOneToOne: false
+            referencedRelation: "routine_tasks_resolved"
             referencedColumns: ["id"]
           },
           {
@@ -1292,6 +1316,48 @@ export type Database = {
           },
         ]
       }
+      user_tasks: {
+        Row: {
+          base_points: number
+          category: string
+          created_at: string
+          description: string | null
+          difficulty: number
+          icon: string | null
+          id: string
+          module: string
+          source: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          base_points?: number
+          category: string
+          created_at?: string
+          description?: string | null
+          difficulty?: number
+          icon?: string | null
+          id?: string
+          module?: string
+          source?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          base_points?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          difficulty?: number
+          icon?: string | null
+          id?: string
+          module?: string
+          source?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       weekly_leaderboards: {
         Row: {
           group_id: string | null
@@ -1457,6 +1523,51 @@ export type Database = {
           },
         ]
       }
+      routine_tasks_resolved: {
+        Row: {
+          base_points: number | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          difficulty: number | null
+          icon: string | null
+          id: string | null
+          module: string | null
+          points_override: number | null
+          position: number | null
+          routine_id: string | null
+          slug: string | null
+          target_frequency: string | null
+          task_id: string | null
+          task_source: string | null
+          time_slot: string | null
+          title: string | null
+          user_task_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routine_tasks_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routine_tasks_user_task_id_fkey"
+            columns: ["user_task_id"]
+            isOneToOne: false
+            referencedRelation: "user_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _gym_pick_exercise: {
@@ -1466,6 +1577,10 @@ export type Database = {
       add_group_member: {
         Args: { p_group_id: string; p_user_id: string }
         Returns: Json
+      }
+      apply_wizard_proposal: {
+        Args: { p_proposals: Json; p_slot: string }
+        Returns: number
       }
       calculate_bmr: {
         Args: { age: number; height_cm: number; sex: string; weight_kg: number }

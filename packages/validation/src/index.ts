@@ -276,6 +276,36 @@ export const STUDY_TECHNIQUE_PRESETS: Record<
   pomodoro_50_10: { focus: 50, break: 10, cycles: 2, label: 'Bloque 50/10' },
 };
 
+// ── Routine design wizard (Fase 15) ─────────────────────────────────────────
+
+export const TASK_SOURCES = ['catalog', 'user'] as const;
+export const TaskSourceSchema = z.enum(TASK_SOURCES);
+export type TaskSource = z.infer<typeof TaskSourceSchema>;
+
+export const USER_TASK_SOURCES = ['wizard', 'manual', 'custom'] as const;
+export const UserTaskSourceSchema = z.enum(USER_TASK_SOURCES);
+export type UserTaskSource = z.infer<typeof UserTaskSourceSchema>;
+
+export const WIZARD_SLOTS = ['morning', 'afternoon', 'evening'] as const;
+export const WizardSlotSchema = z.enum(WIZARD_SLOTS);
+export type WizardSlot = z.infer<typeof WizardSlotSchema>;
+
+/**
+ * Lo que el wizard genera y envía a la RPC apply_wizard_proposal.
+ * Si `catalog_slug` está, se enlaza a tasks_catalog (preserva integraciones
+ * de Fase 14 nutrición y módulos study/gym). Si no, se crea user_task.
+ */
+export const ProposedTaskSchema = z.object({
+  title:          z.string().min(2).max(80),
+  description:    z.string().max(280).optional(),
+  category:       TaskCategorySchema,
+  module:         ModuleSchema.default('generic'),
+  base_points:    z.number().int().min(1).max(30).default(5),
+  target_frequency: TargetFrequencySchema.default('daily'),
+  catalog_slug:   z.string().optional(),
+});
+export type ProposedTask = z.infer<typeof ProposedTaskSchema>;
+
 // ── Nutrition (Fase 14) ─────────────────────────────────────────────────────
 
 export const MEAL_TYPES = ['breakfast', 'lunch', 'snack', 'dinner'] as const;
