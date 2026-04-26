@@ -276,6 +276,79 @@ export const STUDY_TECHNIQUE_PRESETS: Record<
   pomodoro_50_10: { focus: 50, break: 10, cycles: 2, label: 'Bloque 50/10' },
 };
 
+// ── Fasting (Fase 16) ───────────────────────────────────────────────────────
+
+export const FASTING_PROTOCOLS = [
+  '16_8', '14_10', '18_6', '20_4', 'omad', '5_2', 'custom',
+] as const;
+export const FastingProtocolSchema = z.enum(FASTING_PROTOCOLS);
+export type FastingProtocol = z.infer<typeof FastingProtocolSchema>;
+
+export const FASTING_PROTOCOL_LABELS: Record<FastingProtocol, string> = {
+  '16_8':   '16:8 — 16h ayuno · 8h ventana',
+  '14_10':  '14:10 — más suave',
+  '18_6':   '18:6 — más estricto',
+  '20_4':   '20:4 — Warrior',
+  'omad':   'OMAD — una comida al día',
+  '5_2':    '5:2 — 5 días normal · 2 bajos',
+  'custom': 'Personalizado',
+};
+
+export const FASTING_PROTOCOL_SHORT: Record<FastingProtocol, string> = {
+  '16_8':   '16:8',
+  '14_10':  '14:10',
+  '18_6':   '18:6',
+  '20_4':   '20:4',
+  'omad':   'OMAD',
+  '5_2':    '5:2',
+  'custom': 'Personalizado',
+};
+
+export const FASTING_PRESET_HOURS: Record<
+  Exclude<FastingProtocol, '5_2' | 'custom'>,
+  { fast: number; eat: number }
+> = {
+  '16_8':  { fast: 16, eat: 8 },
+  '14_10': { fast: 14, eat: 10 },
+  '18_6':  { fast: 18, eat: 6 },
+  '20_4':  { fast: 20, eat: 4 },
+  'omad':  { fast: 23, eat: 1 },
+};
+
+export const FASTING_STATUSES = ['completed', 'broken_early'] as const;
+export const FastingStatusSchema = z.enum(FASTING_STATUSES);
+export type FastingStatus = z.infer<typeof FastingStatusSchema>;
+
+export const WEEKDAY_KEYS = ['MON','TUE','WED','THU','FRI','SAT','SUN'] as const;
+export const WeekdayKeySchema = z.enum(WEEKDAY_KEYS);
+export type WeekdayKey = z.infer<typeof WeekdayKeySchema>;
+
+export const WEEKDAY_LABELS: Record<WeekdayKey, string> = {
+  MON: 'Lun', TUE: 'Mar', WED: 'Mié', THU: 'Jue',
+  FRI: 'Vie', SAT: 'Sáb', SUN: 'Dom',
+};
+
+const HHMM_RE = /^\d{2}:\d{2}(:\d{2})?$/;
+
+export const FastingProtocolInputSchema = z
+  .object({
+    protocol: FastingProtocolSchema,
+    eat_start: z.string().regex(HHMM_RE).optional(),
+    eat_end:   z.string().regex(HHMM_RE).optional(),
+    low_cal_days: z.array(WeekdayKeySchema).optional(),
+    notify_before_close: z.boolean().default(true),
+    notify_on_complete:  z.boolean().default(true),
+    timezone: z.string().min(1).default('Europe/Madrid'),
+  })
+  .refine(
+    (v) =>
+      v.protocol === '5_2'
+        ? (v.low_cal_days?.length ?? 0) > 0
+        : !!v.eat_start && !!v.eat_end,
+    { message: 'Faltan campos obligatorios para el protocolo elegido' },
+  );
+export type FastingProtocolInput = z.infer<typeof FastingProtocolInputSchema>;
+
 // ── Routine design wizard (Fase 15) ─────────────────────────────────────────
 
 export const TASK_SOURCES = ['catalog', 'user'] as const;

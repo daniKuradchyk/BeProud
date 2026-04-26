@@ -1,13 +1,20 @@
-import { useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { addFoodToMeal, getFoodItem } from '@beproud/api';
+import {
+  addFoodToMeal,
+  fetchMyProtocol,
+  getFoodItem,
+  logBreakEarly,
+} from '@beproud/api';
 import { MealTypeSchema, MEAL_TYPE_LABELS, type MealType } from '@beproud/validation';
 import NutritionHeader from '@/components/nutrition/NutritionHeader';
 import QuantityStepper from '@/components/nutrition/QuantityStepper';
+import { computeFastingState } from '@/lib/fasting/computeState';
+import { formatDuration } from '@/lib/fasting/format';
 
 export default function FoodDetail() {
   const router = useRouter();
@@ -27,6 +34,15 @@ export default function FoodDetail() {
     enabled: !!foodId,
   });
 
+  const fastingProtoQ = useQuery({
+    queryKey: ['fasting', 'protocol'],
+    queryFn: fetchMyProtocol,
+  });
+  const fastingState = useMemo(
+    () => computeFastingState(fastingProtoQ.data ?? null),
+    [fastingProtoQ.data],
+  );
+
   const addMut = useMutation({
     mutationFn: () =>
       addFoodToMeal({
@@ -39,10 +55,47 @@ export default function FoodDetail() {
       qc.invalidateQueries({ queryKey: ['nutrition', 'meals', today] });
       qc.invalidateQueries({ queryKey: ['nutrition', 'totals', today] });
       qc.invalidateQueries({ queryKey: ['nutrition', 'recents'] });
+      qc.invalidateQueries({ queryKey: ['fasting'] });
       setSavedMsg('Añadido ✓');
       setTimeout(() => router.back(), 350);
     },
   });
+
+  function onAddPress() {
+    if (!meal) return;
+    if (fastingState.phase === 'fasting' && fastingProtoQ.data) {
+      const proto = fastingProtoQ.data;
+      const startedAt = fastingState.windowClosedAt.toISOString();
+      const now = new Date();
+      Alert.alert(
+        'Estás en ayuno',
+        `Llevas ${formatDuration(fastingState.elapsedMs)} de ${formatDuration(fastingState.plannedMs)}. ¿Romper el ayuno y registrar este alimento?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Romper y registrar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await logBreakEarly({
+                  startedAt,
+                  endedAt:    now.toISOString(),
+                  protocol:   proto.protocol,
+                  plannedMin: Math.round(fastingState.plannedMs / 60_000),
+                  actualMin:  Math.round(fastingState.elapsedMs / 60_000),
+                });
+              } catch {
+                // si falla el log, igualmente seguimos con la comida.
+              }
+              addMut.mutate();
+            },
+          },
+        ],
+      );
+      return;
+    }
+    addMut.mutate();
+  }
 
   if (!foodId) {
     return (
@@ -123,7 +176,7 @@ export default function FoodDetail() {
                 meal ? `Añadir a ${MEAL_TYPE_LABELS[meal]}` : 'Añadir'
               }
               disabled={!meal || addMut.isPending}
-              onPress={() => addMut.mutate()}
+              onPress={onAddPress}
               className={`mt-6 items-center rounded-full py-3 ${
                 meal && !addMut.isPending
                   ? 'bg-brand-300 active:bg-brand-200'

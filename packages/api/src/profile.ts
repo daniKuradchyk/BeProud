@@ -25,6 +25,8 @@ export type Profile = {
   daily_minutes:  number | null;
   equipment:      string[];
   restrictions:   string[];
+  // Fase 10 — timezone IANA del user (ej. 'Europe/Madrid').
+  timezone:       string | null;
 };
 
 export type BiometricsPatch = Partial<{

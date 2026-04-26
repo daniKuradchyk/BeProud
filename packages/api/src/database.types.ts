@@ -196,6 +196,87 @@ export type Database = {
         }
         Relationships: []
       }
+      fasting_logs: {
+        Row: {
+          actual_duration_min: number
+          created_at: string
+          ended_at: string
+          id: string
+          notes: string | null
+          planned_duration_min: number
+          protocol: Database["public"]["Enums"]["fasting_protocol"]
+          started_at: string
+          status: Database["public"]["Enums"]["fasting_status"]
+          user_id: string
+        }
+        Insert: {
+          actual_duration_min: number
+          created_at?: string
+          ended_at: string
+          id?: string
+          notes?: string | null
+          planned_duration_min: number
+          protocol: Database["public"]["Enums"]["fasting_protocol"]
+          started_at: string
+          status: Database["public"]["Enums"]["fasting_status"]
+          user_id: string
+        }
+        Update: {
+          actual_duration_min?: number
+          created_at?: string
+          ended_at?: string
+          id?: string
+          notes?: string | null
+          planned_duration_min?: number
+          protocol?: Database["public"]["Enums"]["fasting_protocol"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["fasting_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fasting_protocols: {
+        Row: {
+          created_at: string
+          eat_end: string | null
+          eat_start: string | null
+          enabled: boolean
+          low_cal_days: string[] | null
+          notify_before_close: boolean
+          notify_on_complete: boolean
+          protocol: Database["public"]["Enums"]["fasting_protocol"]
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          eat_end?: string | null
+          eat_start?: string | null
+          enabled?: boolean
+          low_cal_days?: string[] | null
+          notify_before_close?: boolean
+          notify_on_complete?: boolean
+          protocol: Database["public"]["Enums"]["fasting_protocol"]
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          eat_end?: string | null
+          eat_start?: string | null
+          enabled?: boolean
+          low_cal_days?: string[] | null
+          notify_before_close?: boolean
+          notify_on_complete?: boolean
+          protocol?: Database["public"]["Enums"]["fasting_protocol"]
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           accepted_at: string | null
@@ -1591,6 +1672,7 @@ export type Database = {
         Args: { bmr: number; daily_minutes: number; weekly_days: number }
         Returns: number
       }
+      close_completed_fasts: { Args: never; Returns: number }
       complete_study_cycle: {
         Args: { p_session_id: string }
         Returns: undefined
@@ -1767,6 +1849,15 @@ export type Database = {
       }
     }
     Enums: {
+      fasting_protocol:
+        | "16_8"
+        | "14_10"
+        | "18_6"
+        | "20_4"
+        | "omad"
+        | "5_2"
+        | "custom"
+      fasting_status: "completed" | "broken_early"
       meal_type: "breakfast" | "lunch" | "snack" | "dinner"
     }
     CompositeTypes: {
@@ -1895,6 +1986,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      fasting_protocol: [
+        "16_8",
+        "14_10",
+        "18_6",
+        "20_4",
+        "omad",
+        "5_2",
+        "custom",
+      ],
+      fasting_status: ["completed", "broken_early"],
       meal_type: ["breakfast", "lunch", "snack", "dinner"],
     },
   },

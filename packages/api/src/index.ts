@@ -128,6 +128,19 @@ export {
 } from './userTasks';
 
 export {
+  fetchMyProtocol,
+  upsertMyProtocol,
+  disableMyProtocol,
+  logBreakEarly,
+  closeCompletedFasts,
+  fetchFastingHistory,
+  fetchFastingStats,
+  type FastingProtocolRow,
+  type FastingLog,
+  type FastingStats,
+} from './fasting';
+
+export {
   uploadTaskPhoto,
   createTaskCompletion,
   fetchMyRecentCompletions,

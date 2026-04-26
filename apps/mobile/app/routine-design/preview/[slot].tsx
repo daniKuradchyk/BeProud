@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { applyWizardProposal } from '@beproud/api';
+import { applyWizardProposal, fetchMyProtocol } from '@beproud/api';
 import { useSession } from '@/lib/session';
+import type { FastingProtocol } from '@beproud/validation';
 import {
   TIME_SLOT_LABELS,
   WizardSlotSchema,
@@ -38,15 +39,29 @@ export default function PreviewScreen() {
   }, [wizard, storedSlot, slot, answers]);
 
   const acceptMut = useMutation({
-    mutationFn: () => applyWizardProposal(slot as WizardSlot, proposals),
-    onSuccess: async () => {
-      // Sincroniza tanto el query (para el hub) como la sesión (para el guard).
+    mutationFn: async () => {
+      const inserted = await applyWizardProposal(slot as WizardSlot, proposals);
+      // Detecta si la respuesta del wizard sugiere onboarding al ayuno.
+      const fastingHint = detectFastingHint(slot, answers);
+      if (fastingHint) {
+        const existing = await fetchMyProtocol().catch(() => null);
+        if (!existing) return { inserted, fastingHint };
+      }
+      return { inserted, fastingHint: null as null };
+    },
+    onSuccess: async (result) => {
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['routine', 'active'] }),
         refreshRoutine(),
       ]);
       reset();
-      router.replace('/routine-design' as never);
+      if (result.fastingHint) {
+        router.replace(
+          `/fasting/setup?protocol=${result.fastingHint}&from=wizard` as never,
+        );
+      } else {
+        router.replace('/routine-design' as never);
+      }
     },
   });
 
@@ -136,4 +151,26 @@ export default function PreviewScreen() {
       </View>
     </SafeAreaView>
   );
+}
+
+/**
+ * Mapea las respuestas del wizard a un protocolo de ayuno si procede.
+ * Devuelve el slug FastingProtocol o null si no hay señal de ayuno.
+ */
+function detectFastingHint(
+  slot: WizardSlot | null,
+  answers: Record<string, unknown>,
+): FastingProtocol | null {
+  if (!slot) return null;
+  if (slot === 'morning') {
+    const breakfast = answers['breakfast'];
+    if (breakfast === 'fasting') return '16_8';
+  }
+  if (slot === 'evening') {
+    const fc = answers['fasting_close'];
+    if (fc === 'yes_16_8') return '16_8';
+    if (fc === 'yes_18_6') return '18_6';
+    if (fc === 'yes_other') return 'custom';
+  }
+  return null;
 }

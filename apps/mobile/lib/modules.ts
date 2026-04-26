@@ -1,8 +1,9 @@
 import { getTodayWorkoutSummary } from '@/features/gym/adapters/getTodayWorkoutSummary';
 import { getTodayStudySummary } from '@/features/study/adapters/getTodayStudySummary';
 import { getTodayNutritionSummary } from '@/features/nutrition/adapters/getTodayNutritionSummary';
+import { getTodayFastingSummary } from '@/features/fasting/adapters/getTodayFastingSummary';
 
-export type ModuleId = 'gym' | 'study' | 'nutrition';
+export type ModuleId = 'gym' | 'study' | 'nutrition' | 'fasting';
 
 export type ModuleSummary = {
   id: ModuleId;
@@ -29,6 +30,7 @@ export const MODULE_REGISTRY: ModuleAdapter[] = [
   { id: 'gym',       getTodaySummary: getTodayWorkoutSummary },
   { id: 'study',     getTodaySummary: getTodayStudySummary },
   { id: 'nutrition', getTodaySummary: getTodayNutritionSummary },
+  { id: 'fasting',   getTodaySummary: getTodayFastingSummary },
 ];
 
 /** Helper para fetch en paralelo + filtrar nulls. */
