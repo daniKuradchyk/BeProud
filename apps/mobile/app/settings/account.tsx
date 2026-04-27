@@ -14,6 +14,7 @@ import { useMutation } from '@tanstack/react-query';
 import Button from '@/components/Button';
 import { useSession } from '@/lib/session';
 import { deleteMyAccount, signOut } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function AccountSettings() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function AccountSettings() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header title="Cuenta" onBack={() => router.back()} />
+      <Header title="Cuenta" onBack={() => backOrReplace(router, '/settings' as never)} />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Field label="Email" value={user?.email ?? '—'} hint="Read-only en esta versión." />
         <Field label="Usuario" value={profile?.username ? `@${profile.username}` : '—'} />

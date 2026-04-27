@@ -1,9 +1,9 @@
 import '../global.css';
 
 import { useEffect } from 'react';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Slot, usePathname, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Platform, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -11,6 +11,8 @@ import { useSession } from '@/lib/session';
 import { consumePendingJoinCode, setupDeepLinks } from '@/lib/deepLinks';
 import { GamificationProvider } from '@/lib/gamificationListeners';
 import { NotificationsProvider } from '@/lib/notificationsListeners';
+import { ToastProvider } from '@/components/primitives';
+import { backFallbackForPath } from '@/lib/navigation/back';
 
 // Una sola instancia para toda la app. staleTime 30s evita refetches
 // agresivos al cambiar de pantalla; las invalidaciones manuales (Realtime,
@@ -26,13 +28,15 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <StatusBar style="light" />
-        <RouteGuard>
-          <GamificationProvider>
-            <NotificationsProvider>
-              <Slot />
-            </NotificationsProvider>
-          </GamificationProvider>
-        </RouteGuard>
+        <ToastProvider>
+          <RouteGuard>
+            <GamificationProvider>
+              <NotificationsProvider>
+                <Slot />
+              </NotificationsProvider>
+            </GamificationProvider>
+          </RouteGuard>
+        </ToastProvider>
       </QueryClientProvider>
     </SafeAreaProvider>
   );
@@ -41,6 +45,7 @@ export default function RootLayout() {
 function RouteGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const segments = useSegments();
+  const pathname = usePathname();
   const { status, init } = useSession();
 
   // Inicializa la sesión la primera vez que monta el árbol.
@@ -52,6 +57,18 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     return setupDeepLinks();
   }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (router.canGoBack()) return false;
+      const fallback = backFallbackForPath(pathname);
+      if (!fallback) return false;
+      router.replace(fallback);
+      return true;
+    });
+    return () => sub.remove();
+  }, [pathname, router]);
 
   // Si hay un código de invitación pendiente y ya tenemos sesión, navegamos
   // a la pantalla de preview.

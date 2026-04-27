@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -16,6 +16,7 @@ import {
   type Exercise,
   type MuscleGroup,
 } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const MUSCLES: Array<{ key: MuscleGroup | 'all'; label: string }> = [
   { key: 'all', label: 'Todos' },
@@ -47,7 +48,7 @@ export default function GymExercises() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header title="Ejercicios" onBack={() => router.back()} />
+      <Header title="Ejercicios" onBack={() => backOrReplace(router, '/gym' as never)} />
       <View className="px-4 pb-2">
         <TextInput
           placeholder="Buscar ejercicio…"

@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import Button from '@/components/Button';
 import { exportMyData } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function DataSettings() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function DataSettings() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/settings' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

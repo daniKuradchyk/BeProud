@@ -17,6 +17,7 @@ import {
   type TaskCategory,
 } from '@beproud/validation';
 import { useSession } from '@/lib/session';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const EVIDENCE_LABEL: Record<EvidenceLevel, string> = {
   strong:    'Evidencia fuerte',
@@ -70,7 +71,7 @@ export default function TaskDetailScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/routine' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

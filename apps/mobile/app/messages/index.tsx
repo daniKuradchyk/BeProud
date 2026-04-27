@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Pressable,
   RefreshControl,
@@ -12,11 +11,14 @@ import { useRouter } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Avatar from '@/components/Avatar';
+import { EmptyState, Skeleton } from '@/components/primitives';
+import { EmptyMessages } from '@/components/illustrations';
 import { relativeTime } from '@/lib/relativeTime';
 import {
   fetchMyThreads,
   type ThreadWithLastMessage,
 } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const THREADS_KEY = ['threads'] as const;
 
@@ -46,7 +48,7 @@ export default function MessagesIndex() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/profile' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >
@@ -76,18 +78,18 @@ export default function MessagesIndex() {
         )}
         ListEmptyComponent={
           threads.isLoading ? (
-            <View className="items-center py-20">
-              <ActivityIndicator color="#A9C6E8" />
+            <View className="px-4 py-2">
+              <Skeleton.Row />
+              <Skeleton.Row />
+              <Skeleton.Row />
+              <Skeleton.Row />
             </View>
           ) : (
-            <View className="items-center px-6 py-20">
-              <Text className="mb-2 text-base font-bold text-white">
-                Aún no tienes conversaciones
-              </Text>
-              <Text className="text-center text-sm text-brand-200">
-                Visita el perfil de alguien para empezar a hablar.
-              </Text>
-            </View>
+            <EmptyState
+              illustration={<EmptyMessages />}
+              title="Aún no tienes conversaciones"
+              description="Visita el perfil de alguien para empezar a hablar."
+            />
           )
         }
       />

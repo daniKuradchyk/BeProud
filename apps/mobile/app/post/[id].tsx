@@ -20,6 +20,7 @@ import {
 import PostCard from '@/features/feed/components/PostCard';
 import CommentItem from '@/features/feed/components/CommentItem';
 import { useSession } from '@/lib/session';
+import { backOrReplace } from '@/lib/navigation/back';
 import {
   blockUser,
   createComment,
@@ -129,12 +130,12 @@ export default function PostDetailScreen() {
 
   const blockMutation = useMutation({
     mutationFn: (userId: string) => blockUser(userId),
-    onSuccess: () => router.back(),
+    onSuccess: () => backOrReplace(router, '/(tabs)/feed' as never),
   });
 
   const deletePostMutation = useMutation({
     mutationFn: () => deletePost(id),
-    onSuccess: () => router.back(),
+    onSuccess: () => backOrReplace(router, '/(tabs)/feed' as never),
   });
 
   const headerText = useMemo(() => {
@@ -148,7 +149,7 @@ export default function PostDetailScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/feed' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

@@ -9,6 +9,7 @@ import FastingHeader from '@/components/fasting/FastingHeader';
 import { computeFastingState } from '@/lib/fasting/computeState';
 import { formatDuration } from '@/lib/fasting/format';
 import { rescheduleFastingNotifications } from '@/lib/fasting/notifications';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function FastingBreak() {
   const router = useRouter();
@@ -41,13 +42,16 @@ export default function FastingBreak() {
     },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ['fasting'] });
-      router.back();
+      router.replace('/fasting' as never);
     },
   });
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <FastingHeader title="Romper ayuno" onBack={() => router.back()} />
+      <FastingHeader
+        title="Romper ayuno"
+        onBack={() => backOrReplace(router, '/fasting' as never)}
+      />
       <View className="flex-1 items-center justify-center px-6">
         <Text className="mb-2 text-3xl">⚠️</Text>
         <Text className="mb-2 text-center text-xl font-extrabold text-white">
@@ -94,7 +98,7 @@ export default function FastingBreak() {
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            onPress={() => router.back()}
+            onPress={() => backOrReplace(router, '/fasting' as never)}
             className="items-center rounded-full bg-brand-700/40 py-3 active:bg-brand-600/60"
           >
             <Text className="text-sm font-bold text-brand-100">Volver</Text>

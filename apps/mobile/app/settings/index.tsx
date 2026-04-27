@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { signOut } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 type Row = {
   label: string;
@@ -54,7 +55,7 @@ export default function SettingsIndex() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/profile' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

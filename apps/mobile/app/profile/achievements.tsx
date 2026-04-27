@@ -16,6 +16,7 @@ import {
   type Achievement,
   type AchievementCategory,
 } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const CATEGORY_LABEL: Record<AchievementCategory, string> = {
   completion: 'Tareas',
@@ -23,6 +24,7 @@ const CATEGORY_LABEL: Record<AchievementCategory, string> = {
   social: 'Social',
   points: 'Puntos',
   group: 'Grupos',
+  fasting: 'Ayuno',
 };
 
 const CATEGORY_ORDER: AchievementCategory[] = [
@@ -31,6 +33,7 @@ const CATEGORY_ORDER: AchievementCategory[] = [
   'social',
   'points',
   'group',
+  'fasting',
 ];
 
 export default function AchievementsScreen() {
@@ -49,8 +52,15 @@ export default function AchievementsScreen() {
       social: [],
       points: [],
       group: [],
+      fasting: [],
     };
-    for (const a of q.data ?? []) map[a.category].push(a);
+    // Defensivo: si la BBDD añade categorías nuevas que el cliente no
+    // conoce todavía (release skew), las agrupamos en 'completion' en lugar
+    // de crashear con map[undefined].push(...).
+    for (const a of q.data ?? []) {
+      const bucket = map[a.category] ?? map.completion;
+      bucket.push(a);
+    }
     return map;
   }, [q.data]);
 
@@ -63,7 +73,7 @@ export default function AchievementsScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/profile' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

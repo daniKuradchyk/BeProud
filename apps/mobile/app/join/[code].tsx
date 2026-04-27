@@ -12,6 +12,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Button from '@/components/Button';
 import { fetchGroupByCode, joinGroupByCode } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function JoinByCodeScreen() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function JoinByCodeScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/groups' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

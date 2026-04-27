@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { RefreshableScrollView } from '@/components/primitives';
 
 import {
   fetchTargets,
@@ -12,6 +14,7 @@ import {
 } from '@beproud/api';
 import { NutritionTargetsManualSchema } from '@beproud/validation';
 import NutritionHeader from '@/components/nutrition/NutritionHeader';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function TargetsScreen() {
   const router = useRouter();
@@ -75,8 +78,14 @@ export default function TargetsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <NutritionHeader title="Objetivos diarios" onBack={() => router.back()} />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <NutritionHeader
+        title="Objetivos diarios"
+        onBack={() => backOrReplace(router, '/nutrition' as never)}
+      />
+      <RefreshableScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+      >
         {!hasBiometrics && (
           <View className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3">
             <Text className="text-sm font-bold text-amber-200">
@@ -143,7 +152,7 @@ export default function TargetsScreen() {
             {saveMut.isPending ? 'Guardando…' : 'Guardar manual'}
           </Text>
         </Pressable>
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }

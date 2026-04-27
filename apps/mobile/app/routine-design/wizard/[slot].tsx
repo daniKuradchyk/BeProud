@@ -8,6 +8,7 @@ import { getDefaultAnswer, type Answer, type Answers } from '@/lib/routineWizard
 import { getWizardForSlot, useRoutineWizardStore } from '@/lib/routineWizard/store';
 import WizardProgressBar from '@/components/routine-design/WizardProgressBar';
 import WizardQuestion from '@/components/routine-design/WizardQuestion';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function WizardScreen() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function WizardScreen() {
 
   function back() {
     if (idx > 0) setIdx(idx - 1);
-    else router.back();
+    else if (slot) backOrReplace(router, `/routine-design/block/${slot}` as never);
   }
 
   const qId = q.id;

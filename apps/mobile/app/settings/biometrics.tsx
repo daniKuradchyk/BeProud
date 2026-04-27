@@ -9,6 +9,8 @@ import Slider from '@/components/Slider';
 import DatePickerInput from '@/components/DatePickerInput';
 import MultiSelectChips from '@/features/onboarding/components/MultiSelectChips';
 import { fetchMyProfile, updateBiometrics } from '@beproud/api';
+import { useSession } from '@/lib/session';
+import { backOrReplace } from '@/lib/navigation/back';
 import {
   BIOLOGICAL_SEX,
   BIOLOGICAL_SEX_LABELS,
@@ -28,9 +30,13 @@ import {
 export default function BiometricsSettings() {
   const router = useRouter();
   const qc = useQueryClient();
+  const { refreshProfile } = useSession();
 
+  // Cache key unificada: el resto de la app usa ['profile','me'].
+  // Antes esto era ['my-profile'] y al guardar invalidaba una key que nadie
+  // más escuchaba → /nutrition seguía mostrando "Completa biometría".
   const profileQ = useQuery({
-    queryKey: ['my-profile'],
+    queryKey: ['profile', 'me'],
     queryFn: fetchMyProfile,
   });
 
@@ -74,8 +80,15 @@ export default function BiometricsSettings() {
         equipment,
         restrictions,
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['my-profile'] });
+    onSuccess: async () => {
+      // Invalida todas las queries que dependen del profile + refresca la
+      // sesión para que /nutrition, /fasting y RouteGuard vean los nuevos
+      // datos sin esperar a la próxima recarga.
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['profile', 'me'] }),
+        qc.invalidateQueries({ queryKey: ['nutrition', 'targets'] }),
+        refreshProfile(),
+      ]);
       setSavedAt(Date.now());
       setError(null);
     },
@@ -92,7 +105,7 @@ export default function BiometricsSettings() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/settings' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

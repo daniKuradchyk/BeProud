@@ -18,6 +18,7 @@ import {
   type NotificationPrefs,
   type NotificationType,
 } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const TOGGLE_LABELS: Record<NotificationType, { title: string; hint: string }> = {
   new_like:             { title: 'Likes',                hint: 'Cuando alguien le da like a tu post' },
@@ -79,7 +80,7 @@ export default function NotificationsSettings() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header title="Notificaciones" onBack={() => router.back()} />
+      <Header title="Notificaciones" onBack={() => backOrReplace(router, '/settings' as never)} />
 
       {q.isLoading || !draft ? (
         <View className="flex-1 items-center justify-center">

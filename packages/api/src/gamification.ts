@@ -28,7 +28,8 @@ export type AchievementCategory =
   | 'streak'
   | 'social'
   | 'points'
-  | 'group';
+  | 'group'
+  | 'fasting';
 
 export type Achievement = {
   id: number;

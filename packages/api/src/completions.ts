@@ -7,8 +7,12 @@ export type TaskCompletion = {
   id: string;
   user_id: string;
   routine_task_id: string | null;
-  task_id: string;
-  photo_path: string;
+  /** Tras Fase 17 puede ser null si la completion procede de una user_task. */
+  task_id: string | null;
+  /** Tras Fase 17: completion procedente de user_tasks (Fase 15 wizard). */
+  user_task_id: string | null;
+  /** Tras Fase 13: nullable (auto_validated meals/study sessions sin foto). */
+  photo_path: string | null;
   points_awarded: number;
   ai_validation_status: AiValidationStatus;
   ai_confidence: number | null;
@@ -55,7 +59,9 @@ export async function uploadTaskPhoto(
 
 export type CreateTaskCompletionInput = {
   routineTaskId: string | null;
-  taskId: string;
+  /** Pasar exactamente uno: taskId (catálogo) o userTaskId (Fase 15). */
+  taskId?: string | null;
+  userTaskId?: string | null;
   photoPath: string;
   pointsAwarded: number;
   isPublic: boolean;
@@ -64,6 +70,10 @@ export type CreateTaskCompletionInput = {
 /**
  * Inserta una task_completion. ai_validation_status se queda en 'skipped' (la
  * IA llega en Fase 9). El trigger `bump_user_points` actualiza profile.total_points.
+ *
+ * Tras Fase 17: la routine_task puede venir de tasks_catalog (taskId) o de
+ * user_tasks (userTaskId). Pasamos exactamente uno; el CHECK de la BBDD
+ * garantiza la coherencia.
  */
 export async function createTaskCompletion(
   input: CreateTaskCompletionInput,
@@ -73,12 +83,19 @@ export async function createTaskCompletion(
   const user = userData.user;
   if (!user) throw new Error('Necesitas iniciar sesión.');
 
+  const taskId     = input.taskId ?? null;
+  const userTaskId = input.userTaskId ?? null;
+  if (!taskId === !userTaskId) {
+    throw new Error('createTaskCompletion: pasa exactamente uno de taskId o userTaskId.');
+  }
+
   const { data, error } = await supabase
     .from('task_completions')
     .insert({
       user_id: user.id,
       routine_task_id: input.routineTaskId,
-      task_id: input.taskId,
+      task_id: taskId,
+      user_task_id: userTaskId,
       photo_path: input.photoPath,
       points_awarded: input.pointsAwarded,
       is_public: input.isPublic,
@@ -109,14 +126,13 @@ export async function fetchMyRecentCompletions(
 
   const { data, error } = await supabase
     .from('task_completions')
-    .select('*, task:tasks_catalog(*)')
+    .select('*, task:tasks_catalog(*), user_task:user_tasks(*)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) throw error;
 
-  const rows = (data ?? []) as Array<TaskCompletion & { task: TaskCatalogItem }>;
-  return await hydrateSignedUrls(rows);
+  return await hydrateSignedUrls(data ?? []);
 }
 
 /** Completions más recientes asociadas a una tarea concreta (para mi historial). */
@@ -130,15 +146,14 @@ export async function fetchCompletionsByTask(
 
   const { data, error } = await supabase
     .from('task_completions')
-    .select('*, task:tasks_catalog(*)')
+    .select('*, task:tasks_catalog(*), user_task:user_tasks(*)')
     .eq('user_id', userId)
     .eq('task_id', taskId)
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) throw error;
 
-  const rows = (data ?? []) as Array<TaskCompletion & { task: TaskCatalogItem }>;
-  return await hydrateSignedUrls(rows);
+  return await hydrateSignedUrls(data ?? []);
 }
 
 /**
@@ -232,17 +247,95 @@ export async function getCurrentStreak(): Promise<number> {
 
 // ── helpers internos ────────────────────────────────────────────────────────
 
+type RawCompletionRow = TaskCompletion & {
+  task: TaskCatalogItem | null;
+  user_task?: {
+    id: string;
+    title: string;
+    description: string | null;
+    category: string;
+    module: string;
+    base_points: number;
+    icon: string | null;
+  } | null;
+};
+
+/**
+ * Rehidrata cada completion con:
+ * - URL firmada de la foto (null si no hay foto, ej. auto_validated meals).
+ * - `task` sintético desde user_task cuando la completion procede del wizard
+ *   de Fase 15. Así los componentes (PhotoGrid, perfil, recommendations)
+ *   pueden seguir leyendo `c.task.title` sin null checks por todas partes.
+ */
 async function hydrateSignedUrls(
-  rows: Array<TaskCompletion & { task: TaskCatalogItem }>,
+  rows: RawCompletionRow[],
 ): Promise<TaskCompletionWithCatalog[]> {
-  // Resolvemos en paralelo. Una URL firmada que falle no rompe el resto.
   const signed = await Promise.all(
-    rows.map((r) => getSignedPhotoUrl(r.photo_path).catch(() => null)),
+    rows.map((r) =>
+      r.photo_path
+        ? getSignedPhotoUrl(r.photo_path).catch(() => null)
+        : Promise.resolve(null),
+    ),
   );
-  return rows.map((r, idx) => ({
-    ...r,
-    signed_url: signed[idx] ?? null,
-  }));
+  return rows.map((r, idx) => {
+    let task: TaskCatalogItem | null = r.task ?? null;
+    if (!task && r.user_task) {
+      task = {
+        id: r.user_task.id,
+        slug: '',
+        title: r.user_task.title,
+        description: r.user_task.description ?? '',
+        category: r.user_task.category,
+        base_points: r.user_task.base_points,
+        icon: r.user_task.icon ?? null,
+        photo_hint: '',
+        is_active: true,
+        created_at: r.created_at,
+        duration_min: null,
+        calories_burned: null,
+        equipment_required: [],
+        muscle_groups: [],
+        difficulty: null,
+        contraindications: [],
+        evidence_level: null,
+        references_text: null,
+        subcategory: null,
+        module: r.user_task.module,
+      } as unknown as TaskCatalogItem;
+    }
+    if (!task) {
+      // Última red: la completion no tiene catálogo NI user_task asociado
+      // (caso muy raro tras eliminaciones manuales). Sintetizamos un mínimo
+      // para no romper la UI.
+      task = {
+        id: r.task_id ?? r.user_task_id ?? r.id,
+        slug: '',
+        title: 'Tarea',
+        description: '',
+        category: 'productivity',
+        base_points: r.points_awarded,
+        icon: null,
+        photo_hint: '',
+        is_active: true,
+        created_at: r.created_at,
+        duration_min: null,
+        calories_burned: null,
+        equipment_required: [],
+        muscle_groups: [],
+        difficulty: null,
+        contraindications: [],
+        evidence_level: null,
+        references_text: null,
+        subcategory: null,
+        module: 'generic',
+      } as unknown as TaskCatalogItem;
+    }
+    return {
+      ...r,
+      task,
+      signed_url: signed[idx] ?? null,
+    };
+  });
 }
 
 function blobMimeForExt(ext: string): string {

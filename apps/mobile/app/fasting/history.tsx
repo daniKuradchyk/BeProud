@@ -1,4 +1,4 @@
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -6,7 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchFastingHistory, fetchFastingStats } from '@beproud/api';
 import FastingHeader from '@/components/fasting/FastingHeader';
 import FastingHistoryRow from '@/components/fasting/FastingHistoryRow';
+import { EmptyState, RefreshableScrollView, Skeleton } from '@/components/primitives';
+import { EmptyHistory } from '@/components/illustrations';
 import { formatMinutes } from '@/lib/fasting/format';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function FastingHistory() {
   const router = useRouter();
@@ -22,8 +25,11 @@ export default function FastingHistory() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <FastingHeader title="Historial de ayuno" onBack={() => router.back()} />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <FastingHeader
+        title="Historial de ayuno"
+        onBack={() => backOrReplace(router, '/fasting' as never)}
+      />
+      <RefreshableScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <View className="mb-4 rounded-2xl border border-brand-700 bg-brand-800/60 p-4">
           <Text className="text-xs uppercase tracking-wider text-brand-300">Resumen</Text>
           <Text className="mt-1 text-sm text-white">
@@ -40,16 +46,24 @@ export default function FastingHistory() {
           </Text>
         </View>
 
-        {(historyQ.data ?? []).length === 0 ? (
-          <Text className="text-sm text-brand-300">
-            Aún no hay ayunos registrados.
-          </Text>
+        {historyQ.isLoading ? (
+          <>
+            <Skeleton.Row />
+            <Skeleton.Row />
+            <Skeleton.Row />
+          </>
+        ) : (historyQ.data ?? []).length === 0 ? (
+          <EmptyState
+            illustration={<EmptyHistory />}
+            title="Aún no hay ayunos registrados"
+            description="Cuando completes tu primer ayuno aparecerá aquí con su duración."
+          />
         ) : (
           (historyQ.data ?? []).map((log) => (
             <FastingHistoryRow key={log.id} log={log} />
           ))
         )}
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }

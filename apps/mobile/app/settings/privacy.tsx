@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import Button from '@/components/Button';
 import { useSession } from '@/lib/session';
 import { updateProfile } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function PrivacySettingsScreen() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function PrivacySettingsScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/settings' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

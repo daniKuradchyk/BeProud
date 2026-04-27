@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const LAST_UPDATED = '2026-04-26';
 
@@ -12,7 +13,7 @@ export default function TermsPage() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/settings' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

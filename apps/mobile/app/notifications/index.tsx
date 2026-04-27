@@ -18,6 +18,7 @@ import {
   type Notification,
 } from '@beproud/api';
 import { buildNotificationBody } from '@/features/notifications/components/NotificationToast';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const ICON_BY_TYPE: Record<Notification['type'], string> = {
   new_like: '❤️',
@@ -138,7 +139,7 @@ export default function NotificationsScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/profile' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

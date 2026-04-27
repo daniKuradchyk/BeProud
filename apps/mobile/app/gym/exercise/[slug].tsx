@@ -8,6 +8,7 @@ import {
   fetchExerciseBySlug,
   fetchExerciseHistory,
 } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros', arms: 'Brazos',
@@ -39,7 +40,7 @@ export default function ExerciseDetail() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header onBack={() => router.back()} title="Ejercicio" />
+      <Header onBack={() => backOrReplace(router, '/gym/exercises' as never)} title="Ejercicio" />
 
       {exQ.isLoading ? (
         <View className="flex-1 items-center justify-center"><ActivityIndicator color="#A9C6E8" /></View>

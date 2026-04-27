@@ -16,6 +16,7 @@ import {
   type StudyTechnique,
 } from '@beproud/validation';
 import { TECHNIQUE_OPTIONS, clampInt } from '@/features/study/lib/techniques';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function StudyStart() {
   const router = useRouter();
@@ -58,7 +59,10 @@ export default function StudyStart() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header onBack={() => router.back()} title="Sesión de estudio" />
+      <Header
+        onBack={() => backOrReplace(router, '/(tabs)/routine' as never)}
+        title="Sesión de estudio"
+      />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text className="mb-2 text-xs uppercase tracking-wider text-brand-300">
           Técnica

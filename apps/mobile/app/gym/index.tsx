@@ -10,6 +10,7 @@ import {
   startWorkoutSession,
   todayLocalDayIndex,
 } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function GymDashboard() {
   const router = useRouter();
@@ -40,7 +41,10 @@ export default function GymDashboard() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header onBack={() => router.back()} title="Gimnasio" />
+      <Header
+        onBack={() => backOrReplace(router, '/(tabs)/routine' as never)}
+        title="Gimnasio"
+      />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {routineQ.isLoading ? (
           <ActivityIndicator color="#A9C6E8" />

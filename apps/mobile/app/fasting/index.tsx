@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { RefreshableScrollView } from '@/components/primitives';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -15,6 +16,7 @@ import FastingRing from '@/components/fasting/FastingRing';
 import { computeFastingState } from '@/lib/fasting/computeState';
 import { formatDuration, formatHHMMSS, formatMinutes } from '@/lib/fasting/format';
 import { rescheduleFastingNotifications } from '@/lib/fasting/notifications';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function FastingScreen() {
   const router = useRouter();
@@ -54,7 +56,7 @@ export default function FastingScreen() {
     <SafeAreaView className="flex-1 bg-brand-800">
       <FastingHeader
         title="Ayuno"
-        onBack={() => router.back()}
+        onBack={() => backOrReplace(router, '/(tabs)/routine' as never)}
         right={
           <Pressable
             accessibilityRole="button"
@@ -67,7 +69,7 @@ export default function FastingScreen() {
           </Pressable>
         }
       />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <RefreshableScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {!proto || !proto.enabled ? (
           <IdleConfigure onConfigure={() => router.push('/fasting/setup' as never)} />
         ) : state.phase === 'idle' ? (
@@ -134,7 +136,7 @@ export default function FastingScreen() {
             </Pressable>
           </View>
         )}
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }

@@ -22,6 +22,7 @@ import {
 } from '@beproud/validation';
 import { useDebounce } from '@/lib/useDebounce';
 import { useSession } from '@/lib/session';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function ManualPicker() {
   const router = useRouter();
@@ -96,7 +97,7 @@ export default function ManualPicker() {
     <SafeAreaView className="flex-1 bg-brand-800">
       <View className="flex-row items-center px-4 py-3">
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, `/routine-design/block/${slot}` as never)}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Volver"

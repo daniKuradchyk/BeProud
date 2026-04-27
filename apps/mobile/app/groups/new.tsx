@@ -15,6 +15,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { createGroup, updateGroup, uploadGroupCover } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const MAX_SIDE = 1080;
 
@@ -79,7 +80,7 @@ export default function NewGroupScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/groups' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

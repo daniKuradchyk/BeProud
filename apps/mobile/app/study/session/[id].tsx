@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, Pressable, Text, Vibration, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,6 +15,7 @@ import {
   usePomodoro,
   type PomodoroPhase,
 } from '@/features/study/lib/pomodoroStore';
+import { backOrReplace } from '@/lib/navigation/back';
 
 /**
  * Recomputa fase y tiempo restante desde el estado de la sesión BBDD.
@@ -35,7 +36,7 @@ function deriveInitialPhase(opts: {
 }): { phase: PomodoroPhase; remainingSeconds: number; cyclesCompleted: number } {
   const { startedAt, cyclesCompleted, cyclesPlanned, focusSeconds, breakSeconds, now } = opts;
   // Tiempo elapsed desde el início del primer focus.
-  let elapsed = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 1000));
+  const elapsed = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 1000));
 
   // Tiempo "consumido" por los ciclos ya completados (focus + break entre ellos).
   const fullCycleSeconds = focusSeconds + breakSeconds;
@@ -251,7 +252,7 @@ export default function StudySessionScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/routine' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

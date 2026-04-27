@@ -7,16 +7,21 @@ import { Camera, CameraView } from 'expo-camera';
 import { lookupFoodByBarcode, upsertOffProductAsFoodItem } from '@beproud/api';
 import { MealTypeSchema } from '@beproud/validation';
 import NutritionHeader from '@/components/nutrition/NutritionHeader';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function NutritionScan() {
   const router = useRouter();
   const params = useLocalSearchParams<{ meal?: string }>();
   const meal = MealTypeSchema.safeParse(params.meal).success ? params.meal : null;
+  const fallback = (meal ? `/nutrition/meal/${meal}` : '/nutrition') as never;
 
   if (Platform.OS === 'web') {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <NutritionHeader title="Escanear" onBack={() => router.back()} />
+        <NutritionHeader
+          title="Escanear"
+          onBack={() => backOrReplace(router, fallback)}
+        />
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-3xl">📷</Text>
           <Text className="mt-2 text-center text-base font-bold text-white">
@@ -48,6 +53,7 @@ export default function NutritionScan() {
 
 function ScanNative({ meal }: { meal: string | null }) {
   const router = useRouter();
+  const fallback = (meal ? `/nutrition/meal/${meal}` : '/nutrition') as never;
   const [permission, setPermission] = useState<'unknown' | 'granted' | 'denied'>('unknown');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +104,10 @@ function ScanNative({ meal }: { meal: string | null }) {
   if (error) {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <NutritionHeader title="Escanear" onBack={() => router.back()} />
+        <NutritionHeader
+          title="Escanear"
+          onBack={() => backOrReplace(router, fallback)}
+        />
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-center text-sm text-red-300">{error}</Text>
         </View>
@@ -109,7 +118,10 @@ function ScanNative({ meal }: { meal: string | null }) {
   if (permission === 'unknown') {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <NutritionHeader title="Escanear" onBack={() => router.back()} />
+        <NutritionHeader
+          title="Escanear"
+          onBack={() => backOrReplace(router, fallback)}
+        />
         <View className="flex-1 items-center justify-center">
           <Text className="text-brand-300">Preparando cámara…</Text>
         </View>
@@ -120,7 +132,10 @@ function ScanNative({ meal }: { meal: string | null }) {
   if (permission === 'denied') {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <NutritionHeader title="Escanear" onBack={() => router.back()} />
+        <NutritionHeader
+          title="Escanear"
+          onBack={() => backOrReplace(router, fallback)}
+        />
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-3xl">🔒</Text>
           <Text className="mt-2 text-center text-base font-bold text-white">
@@ -157,7 +172,10 @@ function ScanNative({ meal }: { meal: string | null }) {
         onBarcodeScanned={busy ? undefined : ({ data }) => handleScan(data)}
       >
         <SafeAreaView className="flex-1">
-          <NutritionHeader title="Escanear código" onBack={() => router.back()} />
+          <NutritionHeader
+            title="Escanear código"
+            onBack={() => backOrReplace(router, fallback)}
+          />
           <View className="flex-1 items-center justify-center">
             <View
               className="rounded-2xl border-2 border-white/80"
@@ -170,7 +188,7 @@ function ScanNative({ meal }: { meal: string | null }) {
           <View className="items-center pb-4">
             <Pressable
               accessibilityRole="button"
-              onPress={() => router.back()}
+              onPress={() => backOrReplace(router, fallback)}
               className="rounded-full bg-white/20 px-5 py-2 active:bg-white/30"
             >
               <Text className="text-sm font-bold text-white">Cancelar</Text>

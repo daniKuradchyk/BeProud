@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, Text } from 'react-native';
+import { Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ensureActiveRoutine, fetchActiveRoutine } from '@beproud/api';
 import { WIZARD_SLOTS, type WizardSlot } from '@beproud/validation';
 import { useSession } from '@/lib/session';
+import { Body, Caption, Heading, RefreshableScrollView, Skeleton } from '@/components/primitives';
 import BlockHubCard from '@/components/routine-design/BlockHubCard';
 
 export default function RoutineDesignHub() {
@@ -25,8 +26,6 @@ export default function RoutineDesignHub() {
     if (skipping) return;
     setSkipping(true);
     try {
-      // Asegura una rutina activa (aunque vacía) para que el RouteGuard no
-      // devuelva al user a /routine-design al salir.
       await ensureActiveRoutine();
       await refreshRoutine();
       router.replace('/(tabs)/routine' as never);
@@ -36,23 +35,32 @@ export default function RoutineDesignHub() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-brand-800">
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        <Text className="mb-2 text-2xl font-extrabold text-white">Diseña tu día</Text>
-        <Text className="mb-6 text-sm leading-5 text-brand-200">
-          Te ayudamos a montar una rutina que de verdad puedas seguir. Empieza por la
-          mañana, después la tarde y por último la noche. Puedes hacerlas todas hoy o
-          ir poco a poco.
-        </Text>
+    <SafeAreaView className="flex-1 bg-surface-0">
+      <RefreshableScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+        <Heading size="lg" className="mb-2">Diseña tu día</Heading>
+        <Body size="md" tone={2} className="mb-6">
+          Te ayudamos a montar una rutina que de verdad puedas seguir. Empieza
+          por la mañana, después la tarde y por último la noche. Puedes hacerlas
+          todas hoy o ir poco a poco.
+        </Body>
 
-        {WIZARD_SLOTS.map((slot) => (
-          <BlockHubCard
-            key={slot}
-            slot={slot}
-            count={countBySlot(slot)}
-            onPress={() => router.push(`/routine-design/block/${slot}` as never)}
-          />
-        ))}
+        {routineQ.isLoading ? (
+          <>
+            <Skeleton className="mb-3 h-24 w-full rounded-xl" />
+            <Skeleton className="mb-3 h-24 w-full rounded-xl" />
+            <Skeleton className="mb-3 h-24 w-full rounded-xl" />
+          </>
+        ) : (
+          WIZARD_SLOTS.map((slot, i) => (
+            <BlockHubCard
+              key={slot}
+              slot={slot}
+              count={countBySlot(slot)}
+              delay={i * 80}
+              onPress={() => router.push(`/routine-design/block/${slot}` as never)}
+            />
+          ))
+        )}
 
         <Pressable
           accessibilityRole="button"
@@ -61,11 +69,11 @@ export default function RoutineDesignHub() {
           onPress={onSkip}
           className="mt-8 self-center px-4 py-2"
         >
-          <Text className="text-sm text-brand-300 underline">
+          <Caption variant="caption" tone={3} className="underline">
             {skipping ? 'Un momento…' : 'Saltar por ahora'}
-          </Text>
+          </Caption>
         </Pressable>
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }

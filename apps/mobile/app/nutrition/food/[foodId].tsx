@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Image, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -9,20 +9,25 @@ import {
   fetchMyProtocol,
   getFoodItem,
   logBreakEarly,
+  type FastingProtocolRow,
 } from '@beproud/api';
 import { MealTypeSchema, MEAL_TYPE_LABELS, type MealType } from '@beproud/validation';
 import NutritionHeader from '@/components/nutrition/NutritionHeader';
 import QuantityStepper from '@/components/nutrition/QuantityStepper';
+import { useToast } from '@/components/primitives';
 import { computeFastingState } from '@/lib/fasting/computeState';
 import { formatDuration } from '@/lib/fasting/format';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function FoodDetail() {
   const router = useRouter();
   const qc = useQueryClient();
+  const toast = useToast();
   const params = useLocalSearchParams<{ foodId?: string; meal?: string }>();
   const foodId = typeof params.foodId === 'string' ? params.foodId : null;
   const mealParse = MealTypeSchema.safeParse(params.meal);
   const meal: MealType | null = mealParse.success ? mealParse.data : null;
+  const backFallback = (meal ? `/nutrition/meal/${meal}` : '/nutrition') as never;
   const today = todayLocalISO();
 
   const [quantity, setQuantity] = useState(100);
@@ -44,63 +49,116 @@ export default function FoodDetail() {
   );
 
   const addMut = useMutation({
-    mutationFn: () =>
-      addFoodToMeal({
-        mealType: meal as MealType,
-        foodItemId: foodId as string,
+    mutationFn: async () => {
+      // Validamos en cliente antes de invocar la API para devolver mensajes
+      // claros en lugar de fallos crípticos de Postgres.
+      if (!meal)   throw new Error('No se ha indicado a qué comida añadir.');
+      if (!foodId) throw new Error('Alimento no encontrado.');
+      if (quantity <= 0) throw new Error('La cantidad debe ser mayor que 0.');
+      return addFoodToMeal({
+        mealType: meal,
+        foodItemId: foodId,
         quantityG: quantity,
         date: today,
-      }),
+      });
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['nutrition', 'meals', today] });
       qc.invalidateQueries({ queryKey: ['nutrition', 'totals', today] });
       qc.invalidateQueries({ queryKey: ['nutrition', 'recents'] });
       qc.invalidateQueries({ queryKey: ['fasting'] });
       setSavedMsg('Añadido ✓');
-      setTimeout(() => router.back(), 350);
+      toast.success(`Añadido a ${meal ? MEAL_TYPE_LABELS[meal] : 'la comida'}`);
+      setTimeout(() => {
+        if (meal) router.replace(`/nutrition/meal/${meal}` as never);
+        else backOrReplace(router, '/nutrition' as never);
+      }, 400);
+    },
+    onError: (err) => {
+      const msg = err instanceof Error ? err.message : 'No se pudo añadir el alimento.';
+      // Toast visible incluso aunque el user no mire bajo el botón.
+      toast.error(msg);
     },
   });
 
+  function addCurrentFood() {
+    if (addMut.isPending) return;
+    addMut.mutate();
+  }
+
+  async function breakFastAndAdd(
+    startedAt: string,
+    protocol: FastingProtocolRow['protocol'],
+    plannedMin: number,
+    actualMin: number,
+  ) {
+    const now = new Date();
+    try {
+      await logBreakEarly({
+        startedAt,
+        endedAt:    now.toISOString(),
+        protocol,
+        plannedMin,
+        actualMin,
+      });
+    } catch {
+      // si falla el log, igualmente seguimos con la comida.
+    }
+    addCurrentFood();
+  }
+
   function onAddPress() {
-    if (!meal) return;
+    if (!meal) {
+      Alert.alert(
+        'Selecciona una comida',
+        'Para añadir un alimento, abre el detalle de la comida (Desayuno / Almuerzo / Merienda / Cena) y entra a buscar desde ahí.',
+        [{ text: 'Entendido', onPress: () => router.replace('/nutrition' as never) }],
+      );
+      return;
+    }
     if (fastingState.phase === 'fasting' && fastingProtoQ.data) {
       const proto = fastingProtoQ.data;
       const startedAt = fastingState.windowClosedAt.toISOString();
-      const now = new Date();
+      const plannedMin = Math.round(fastingState.plannedMs / 60_000);
+      const actualMin = Math.round(fastingState.elapsedMs / 60_000);
+      const title = 'Estás en ayuno';
+      const message =
+        `Llevas ${formatDuration(fastingState.elapsedMs)} de ${formatDuration(fastingState.plannedMs)}. ¿Romper el ayuno y registrar este alimento?`;
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        if (window.confirm(`${title}\n\n${message}`)) {
+          void breakFastAndAdd(startedAt, proto.protocol, plannedMin, actualMin);
+        }
+        return;
+      }
       Alert.alert(
-        'Estás en ayuno',
-        `Llevas ${formatDuration(fastingState.elapsedMs)} de ${formatDuration(fastingState.plannedMs)}. ¿Romper el ayuno y registrar este alimento?`,
+        title,
+        message,
         [
           { text: 'Cancelar', style: 'cancel' },
           {
             text: 'Romper y registrar',
             style: 'destructive',
-            onPress: async () => {
-              try {
-                await logBreakEarly({
-                  startedAt,
-                  endedAt:    now.toISOString(),
-                  protocol:   proto.protocol,
-                  plannedMin: Math.round(fastingState.plannedMs / 60_000),
-                  actualMin:  Math.round(fastingState.elapsedMs / 60_000),
-                });
-              } catch {
-                // si falla el log, igualmente seguimos con la comida.
-              }
-              addMut.mutate();
-            },
+            onPress: () => void breakFastAndAdd(
+              startedAt,
+              proto.protocol,
+              plannedMin,
+              actualMin,
+            ),
           },
         ],
       );
       return;
     }
-    addMut.mutate();
+    addCurrentFood();
   }
 
   if (!foodId) {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <NutritionHeader title="Alimento" onBack={() => router.back()} />
+        <NutritionHeader
+          title="Alimento"
+          onBack={() => backOrReplace(router, '/nutrition' as never)}
+        />
         <Text className="px-6 text-brand-300">Alimento no encontrado.</Text>
       </SafeAreaView>
     );
@@ -115,8 +173,14 @@ export default function FoodDetail() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <NutritionHeader title={food?.name ?? 'Alimento'} onBack={() => router.back()} />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <NutritionHeader
+        title={food?.name ?? 'Alimento'}
+        onBack={() => backOrReplace(router, backFallback)}
+      />
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+      >
         {food?.image_url ? (
           <Image
             source={{ uri: food.image_url }}
@@ -169,28 +233,37 @@ export default function FoodDetail() {
             {savedMsg && (
               <Text className="mt-3 text-sm font-bold text-emerald-300">{savedMsg}</Text>
             )}
+            {addMut.isError && (
+              <Text className="mt-3 text-sm text-red-400">
+                {addMut.error instanceof Error
+                  ? addMut.error.message
+                  : 'No se pudo añadir el alimento.'}
+              </Text>
+            )}
 
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={
                 meal ? `Añadir a ${MEAL_TYPE_LABELS[meal]}` : 'Añadir'
               }
-              disabled={!meal || addMut.isPending}
+              disabled={addMut.isPending}
               onPress={onAddPress}
+              hitSlop={8}
+              style={{ elevation: 4, zIndex: 10 }}
               className={`mt-6 items-center rounded-full py-3 ${
-                meal && !addMut.isPending
-                  ? 'bg-brand-300 active:bg-brand-200'
-                  : 'bg-brand-700/40'
+                addMut.isPending ? 'bg-brand-700/40' : 'bg-brand-300 active:bg-brand-200'
               }`}
             >
               <Text
                 className={`text-base font-extrabold ${
-                  meal && !addMut.isPending ? 'text-brand-900' : 'text-brand-400'
+                  addMut.isPending ? 'text-brand-400' : 'text-brand-900'
                 }`}
               >
-                {meal
-                  ? `Añadir a ${MEAL_TYPE_LABELS[meal]}`
-                  : 'Selecciona una comida desde el detalle'}
+                {addMut.isPending
+                  ? 'Añadiendo…'
+                  : meal
+                    ? `Añadir a ${MEAL_TYPE_LABELS[meal]}`
+                    : 'Selecciona una comida'}
               </Text>
             </Pressable>
           </>

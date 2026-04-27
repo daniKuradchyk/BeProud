@@ -14,6 +14,8 @@ import {
 } from '@tanstack/react-query';
 
 import PostCard from '@/features/feed/components/PostCard';
+import { EmptyState, Skeleton } from '@/components/primitives';
+import { EmptyFeed } from '@/components/illustrations';
 import { useSession } from '@/lib/session';
 import {
   blockUser,
@@ -138,18 +140,17 @@ export default function FeedScreen() {
         onEndReachedThreshold={0.5}
         ListEmptyComponent={
           query.isLoading ? (
-            <View className="items-center py-20">
-              <ActivityIndicator color="#A9C6E8" />
+            <View className="px-4 py-2">
+              <Skeleton.Card />
+              <Skeleton.Card />
+              <Skeleton.Card />
             </View>
           ) : (
-            <View className="items-center px-6 py-20">
-              <Text className="mb-2 text-base font-bold text-white">
-                Aún no hay posts
-              </Text>
-              <Text className="text-center text-sm text-brand-200">
-                Completa una tarea pública o sigue a alguien (próximamente).
-              </Text>
-            </View>
+            <EmptyState
+              illustration={<EmptyFeed />}
+              title="Aún no hay posts"
+              description="Completa una tarea pública o sigue a alguien para ver su progreso."
+            />
           )
         }
         ListFooterComponent={

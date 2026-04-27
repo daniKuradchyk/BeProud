@@ -16,6 +16,7 @@ import { MealTypeSchema } from '@beproud/validation';
 import NutritionHeader from '@/components/nutrition/NutritionHeader';
 import FoodRow from '@/components/nutrition/FoodRow';
 import { useDebounce } from '@/lib/useDebounce';
+import { backOrReplace } from '@/lib/navigation/back';
 
 type Hit =
   | { kind: 'local'; item: FoodItem }
@@ -25,6 +26,7 @@ export default function NutritionSearch() {
   const router = useRouter();
   const params = useLocalSearchParams<{ meal?: string }>();
   const meal = MealTypeSchema.safeParse(params.meal).success ? params.meal : null;
+  const fallback = (meal ? `/nutrition/meal/${meal}` : '/nutrition') as never;
 
   const [text, setText] = useState('');
   const debounced = useDebounce(text.trim(), 300);
@@ -86,7 +88,10 @@ export default function NutritionSearch() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <NutritionHeader title="Buscar alimento" onBack={() => router.back()} />
+      <NutritionHeader
+        title="Buscar alimento"
+        onBack={() => backOrReplace(router, fallback)}
+      />
       <View className="px-4 pb-2">
         <TextInput
           value={text}
@@ -98,7 +103,10 @@ export default function NutritionSearch() {
           className="rounded-2xl bg-brand-700/40 px-4 py-3 text-base text-white"
         />
       </View>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+      >
         {debounced.length < 2 && (recentsQ.data?.length ?? 0) > 0 && (
           <>
             <Text className="mb-2 text-xs uppercase tracking-wider text-brand-300">

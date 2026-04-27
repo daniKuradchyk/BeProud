@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 
 import Screen from '@/components/Screen';
 import Button from '@/components/Button';
+import { Skeleton } from '@/components/primitives';
 import RoutineHeader from '@/components/routine/RoutineHeader';
 import NowCard from '@/components/routine/NowCard';
 import DayBlock from '@/components/routine/DayBlock';
@@ -105,11 +106,21 @@ export default function RoutineScreen() {
   }, [routine]);
 
   if (!routine) {
+    // Skeleton coherente con la forma final: header + Now Card + 4 filas.
     return (
-      <Screen>
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#A9C6E8" />
+      <Screen scroll>
+        <View className="flex-row items-center gap-3 py-2">
+          <Skeleton className="h-10 w-10 rounded-pill" />
+          <View className="flex-1">
+            <Skeleton className="mb-1 h-3 w-32 rounded-md" />
+            <Skeleton className="h-3 w-20 rounded-md" />
+          </View>
+          <Skeleton className="h-6 w-12 rounded-pill" />
         </View>
+        <Skeleton className="mt-4 h-32 w-full rounded-xl" />
+        <Skeleton.Card />
+        <Skeleton.Card />
+        <Skeleton.Card />
       </Screen>
     );
   }
@@ -326,7 +337,10 @@ export default function RoutineScreen() {
             qc.invalidateQueries({ queryKey: ['my-completions-today'] });
           }}
           routineTaskId={completing.id}
-          taskId={completing.task.id}
+          // Routine_tasks pueden venir del catálogo (task_id) o del wizard
+          // de Fase 15 (user_task_id). Pasamos el correcto según el origen.
+          taskId={completing.task_id}
+          userTaskId={completing.user_task_id}
           baseTitle={completing.task.title}
           basePoints={completing.points_override ?? completing.task.base_points}
           baseHint={completing.task.photo_hint}

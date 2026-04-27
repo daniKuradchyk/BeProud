@@ -236,8 +236,36 @@ export default function ProfileScreen() {
     (bio.trim() || null) !== (profile.bio ?? null) ||
     isPrivate !== profile.is_private;
 
+  // Avisamos en banner llamativo si falta biometría — sin estos datos
+  // /nutrition no puede calcular targets ni /fasting personalizar nada.
+  const missingBiometrics =
+    !profile.birth_date ||
+    !profile.biological_sex ||
+    !profile.height_cm ||
+    !profile.weight_kg;
+
   return (
     <Screen scroll>
+      {missingBiometrics && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Completar biometría"
+          onPress={() => router.push('/settings/biometrics' as never)}
+          className="mb-4 flex-row items-center rounded-2xl border border-amber-500/40 bg-amber-500/10 p-3 active:bg-amber-500/20"
+        >
+          <Text className="mr-3 text-2xl" style={{ lineHeight: 26 }}>📏</Text>
+          <View className="flex-1">
+            <Text className="text-sm font-extrabold text-amber-200">
+              Completa tus datos biométricos
+            </Text>
+            <Text className="text-xs text-amber-100/80">
+              Peso, altura y fecha de nacimiento — los necesitamos para Nutrición y Ayuno.
+            </Text>
+          </View>
+          <Text className="text-base font-bold text-amber-200">›</Text>
+        </Pressable>
+      )}
+
       <View className="mb-4 flex-row items-center justify-between">
         <View className="flex-1">
           <Text className="text-3xl font-extrabold text-white">Tu perfil</Text>
@@ -475,10 +503,16 @@ export default function ProfileScreen() {
       <MonthlyCalendar monthly={monthly} />
 
       <Button
+        title="Datos biométricos"
+        onPress={() => router.push('/settings/biometrics' as never)}
+        className="mt-6"
+      />
+
+      <Button
         title="Logros"
         variant="secondary"
         onPress={() => router.push('/profile/achievements' as never)}
-        className="mt-6"
+        className="mt-3"
       />
 
       <Button
@@ -563,7 +597,7 @@ function PhotoGrid({
             <Pressable
               key={c.id}
               accessibilityRole="button"
-              accessibilityLabel={`Ver foto de ${c.task.title}`}
+              accessibilityLabel={`Ver foto de ${c.task?.title ?? 'tarea'}`}
               onPress={() => onPick(c)}
               style={{ width: '33.3333%', padding: 2 }}
             >
@@ -687,13 +721,13 @@ function PhotoPreview({
             source={{ uri: completion.signed_url }}
             style={{ width: '100%', aspectRatio: 1 }}
             resizeMode="contain"
-            accessibilityLabel={`Foto de ${completion.task.title}`}
+            accessibilityLabel={`Foto de ${completion.task?.title ?? 'tarea'}`}
           />
         )}
         {completion && (
           <View className="mt-4 items-center">
             <Text className="text-base font-bold text-white">
-              {completion.task.title}
+              {completion.task?.title ?? 'Tarea'}
             </Text>
             <Text className="mt-1 text-xs text-brand-300">
               {new Date(completion.created_at).toLocaleString('es-ES')}

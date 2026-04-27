@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { createGymRoutineFromTemplate, dayName, type GymTemplate } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const TEMPLATES: Array<{
   id: GymTemplate;
@@ -60,7 +61,7 @@ export default function GymSetup() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header title="Crear rutina" onBack={() => router.back()} />
+      <Header title="Crear rutina" onBack={() => backOrReplace(router, '/gym' as never)} />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text className="mb-2 text-xs uppercase tracking-wider text-brand-300">
           Plantilla

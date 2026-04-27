@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Modal,
@@ -14,11 +13,14 @@ import { useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Button from '@/components/Button';
+import { EmptyState, Skeleton } from '@/components/primitives';
+import { EmptyGroups } from '@/components/illustrations';
 import {
   fetchMyGroups,
   joinGroupByCode,
   type GroupWithCounts,
 } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const MY_GROUPS_KEY = ['my-groups'] as const;
 
@@ -38,7 +40,7 @@ export default function GroupsIndex() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/profile' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >
@@ -72,18 +74,16 @@ export default function GroupsIndex() {
         )}
         ListEmptyComponent={
           groups.isLoading ? (
-            <View className="items-center py-20">
-              <ActivityIndicator color="#A9C6E8" />
+            <View className="px-4 py-2">
+              <Skeleton.Card />
+              <Skeleton.Card />
             </View>
           ) : (
-            <View className="items-center px-6 py-20">
-              <Text className="mb-2 text-base font-bold text-white">
-                Aún no estás en ningún grupo
-              </Text>
-              <Text className="text-center text-sm text-brand-200">
-                Crea uno o únete con un código de invitación.
-              </Text>
-            </View>
+            <EmptyState
+              illustration={<EmptyGroups />}
+              title="Aún no estás en ningún grupo"
+              description="Crea uno o únete con un código de invitación."
+            />
           )
         }
       />

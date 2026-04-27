@@ -1181,8 +1181,9 @@ export type Database = {
           photo_path: string | null
           points_awarded: number
           routine_task_id: string | null
-          task_id: string
+          task_id: string | null
           user_id: string
+          user_task_id: string | null
         }
         Insert: {
           ai_confidence?: number | null
@@ -1194,8 +1195,9 @@ export type Database = {
           photo_path?: string | null
           points_awarded?: number
           routine_task_id?: string | null
-          task_id: string
+          task_id?: string | null
           user_id: string
+          user_task_id?: string | null
         }
         Update: {
           ai_confidence?: number | null
@@ -1207,8 +1209,9 @@ export type Database = {
           photo_path?: string | null
           points_awarded?: number
           routine_task_id?: string | null
-          task_id?: string
+          task_id?: string | null
           user_id?: string
+          user_task_id?: string | null
         }
         Relationships: [
           {
@@ -1230,6 +1233,13 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_completions_user_task_id_fkey"
+            columns: ["user_task_id"]
+            isOneToOne: false
+            referencedRelation: "user_tasks"
             referencedColumns: ["id"]
           },
         ]

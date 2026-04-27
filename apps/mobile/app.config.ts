@@ -84,7 +84,7 @@ const config: ExpoConfig = {
   },
   extra: {
     eas: {
-      projectId: 'AUTO_REPLACE_ME',
+      projectId: '3d4937bd-76d8-481f-8301-da887fb27987',
     },
     router: {
       origin: false,

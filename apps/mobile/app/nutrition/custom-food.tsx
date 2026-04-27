@@ -7,6 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import { createCustomFood } from '@beproud/api';
 import { CustomFoodSchema, MealTypeSchema } from '@beproud/validation';
 import NutritionHeader from '@/components/nutrition/NutritionHeader';
+import { backOrReplace } from '@/lib/navigation/back';
 
 type FormState = {
   name: string;
@@ -38,6 +39,7 @@ export default function CustomFood() {
   const params = useLocalSearchParams<{ meal?: string; barcode?: string }>();
   const meal = MealTypeSchema.safeParse(params.meal).success ? params.meal : null;
   const barcode = typeof params.barcode === 'string' ? params.barcode : null;
+  const fallback = (meal ? `/nutrition/meal/${meal}` : '/nutrition') as never;
 
   const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<Errors>({});
@@ -53,7 +55,7 @@ export default function CustomFood() {
       if (meal) {
         router.replace(`/nutrition/food/${food.id}?meal=${meal}` as never);
       } else {
-        router.back();
+        backOrReplace(router, '/nutrition' as never);
       }
     },
   });
@@ -84,8 +86,14 @@ export default function CustomFood() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <NutritionHeader title="Crear alimento" onBack={() => router.back()} />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <NutritionHeader
+        title="Crear alimento"
+        onBack={() => backOrReplace(router, fallback)}
+      />
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        keyboardShouldPersistTaps="handled"
+      >
         {barcode && (
           <View className="mb-3 rounded-2xl border border-brand-700 bg-brand-800/60 p-3">
             <Text className="text-xs text-brand-300">Código no encontrado en Open Food Facts</Text>

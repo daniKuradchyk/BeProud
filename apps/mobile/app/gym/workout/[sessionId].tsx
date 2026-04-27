@@ -24,6 +24,7 @@ import {
 import RestTimer from '@/features/gym/components/RestTimer';
 import SetRow from '@/features/gym/components/SetRow';
 import PlateCalculator from '@/features/gym/components/PlateCalculator';
+import { backOrReplace } from '@/lib/navigation/back';
 
 type SetState = {
   reps: string;
@@ -188,7 +189,7 @@ export default function WorkoutLive() {
   if (sessionQ.isLoading || routineQ.isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <Header onBack={() => router.back()} title="Workout" />
+        <Header onBack={() => backOrReplace(router, '/gym' as never)} title="Workout" />
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#A9C6E8" />
         </View>
@@ -199,7 +200,7 @@ export default function WorkoutLive() {
   if (!sessionQ.data || !day) {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <Header onBack={() => router.back()} title="Workout" />
+        <Header onBack={() => backOrReplace(router, '/gym' as never)} title="Workout" />
         <View className="flex-1 items-center justify-center px-6">
           <Text className="text-base text-white">Sesión no encontrada</Text>
         </View>
@@ -218,7 +219,7 @@ export default function WorkoutLive() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header onBack={() => router.back()} title={day.name} />
+      <Header onBack={() => backOrReplace(router, '/gym' as never)} title={day.name} />
 
       <View className="px-4 pb-1">
         <RestTimer key={restKey} seconds={restAtSeconds} />

@@ -8,6 +8,7 @@ import {
   deleteRoutineExercise,
   fetchMyGymRoutine,
 } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function GymRoutineEditor() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function GymRoutineEditor() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header title="Mi rutina" onBack={() => router.back()} />
+      <Header title="Mi rutina" onBack={() => backOrReplace(router, '/gym' as never)} />
       {q.isLoading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#A9C6E8" />

@@ -15,6 +15,7 @@ import { useState } from 'react';
 import Avatar from '@/components/Avatar';
 import FollowButton from '@/features/follows/components/FollowButton';
 import { useSession } from '@/lib/session';
+import { backOrReplace } from '@/lib/navigation/back';
 import {
   blockUser,
   createReport,
@@ -79,7 +80,7 @@ export default function UserProfileScreen() {
     mutationFn: (targetId: string) => blockUser(targetId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: profileKey });
-      router.back();
+      backOrReplace(router, '/(tabs)/search' as never);
     },
   });
 
@@ -89,7 +90,7 @@ export default function UserProfileScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/search' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

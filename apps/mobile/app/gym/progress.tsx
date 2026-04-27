@@ -14,6 +14,7 @@ import {
 } from '@beproud/api';
 import MuscleVolumeBars from '@/features/gym/components/MuscleVolumeBars';
 import Sparkline from '@/features/gym/components/Sparkline';
+import { backOrReplace } from '@/lib/navigation/back';
 
 const KEY_LIFTS = [
   { slug: 'squat_back',           label: 'Sentadilla' },
@@ -88,7 +89,7 @@ export default function GymProgress() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <Header onBack={() => router.back()} title="Progreso" />
+      <Header onBack={() => backOrReplace(router, '/gym' as never)} title="Progreso" />
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text className="mb-2 text-xs uppercase tracking-wider text-brand-300">

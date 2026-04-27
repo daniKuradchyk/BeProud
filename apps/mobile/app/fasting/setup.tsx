@@ -24,6 +24,7 @@ import ProtocolCard from '@/components/fasting/ProtocolCard';
 import WindowEditor from '@/components/fasting/WindowEditor';
 import { defaultEatWindow } from '@/lib/fasting/presets';
 import { rescheduleFastingNotifications } from '@/lib/fasting/notifications';
+import { backOrReplace } from '@/lib/navigation/back';
 
 function diffHours(start: string, end: string): number {
   const [sh, sm] = start.split(':').map(Number) as [number, number];
@@ -118,7 +119,7 @@ export default function FastingSetup() {
     },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ['fasting'] });
-      router.back();
+      router.replace('/fasting' as never);
     },
   });
 
@@ -139,7 +140,12 @@ export default function FastingSetup() {
 
   return (
     <SafeAreaView className="flex-1 bg-brand-800">
-      <FastingHeader title="Configurar ayuno" onBack={() => router.back()} />
+      <FastingHeader
+        title="Configurar ayuno"
+        onBack={() =>
+          backOrReplace(router, (fromWizard ? '/routine-design' : '/fasting') as never)
+        }
+      />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text className="mb-2 text-xs uppercase tracking-wider text-brand-300">Protocolo</Text>
         {FASTING_PROTOCOLS.map((p) => (

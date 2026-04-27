@@ -16,6 +16,7 @@ import {
 import { getWizardForSlot, useRoutineWizardStore } from '@/lib/routineWizard/store';
 import { runWizard } from '@/lib/routineWizard/runWizard';
 import ProposedTaskRow from '@/components/routine-design/ProposedTaskRow';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function PreviewScreen() {
   const router = useRouter();
@@ -88,7 +89,7 @@ export default function PreviewScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, `/routine-design/block/${slot}` as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

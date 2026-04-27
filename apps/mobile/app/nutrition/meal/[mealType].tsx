@@ -1,7 +1,9 @@
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { RefreshableScrollView } from '@/components/primitives';
 
 import {
   fetchTodayMeals,
@@ -17,6 +19,7 @@ import {
 import NutritionHeader from '@/components/nutrition/NutritionHeader';
 import FoodRow from '@/components/nutrition/FoodRow';
 import EmptyMeal from '@/components/nutrition/EmptyMeal';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function MealDetail() {
   const router = useRouter();
@@ -26,7 +29,10 @@ export default function MealDetail() {
   if (!parsed.success) {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <NutritionHeader title="Comida" onBack={() => router.back()} />
+        <NutritionHeader
+          title="Comida"
+          onBack={() => backOrReplace(router, '/nutrition' as never)}
+        />
         <Text className="px-6 text-brand-300">Comida no válida.</Text>
       </SafeAreaView>
     );
@@ -68,9 +74,9 @@ export default function MealDetail() {
     <SafeAreaView className="flex-1 bg-brand-800">
       <NutritionHeader
         title={`${MEAL_TYPE_ICONS[mealType]} ${MEAL_TYPE_LABELS[mealType]}`}
-        onBack={() => router.back()}
+        onBack={() => backOrReplace(router, '/nutrition' as never)}
       />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <RefreshableScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <View className="mb-3 rounded-2xl border border-brand-700 bg-brand-800/60 p-4">
           <Text className="text-xs uppercase tracking-wider text-brand-300">Total</Text>
           <Text className="mt-1 text-2xl font-extrabold text-white">
@@ -130,7 +136,7 @@ export default function MealDetail() {
             <Text className="text-sm font-bold text-brand-100">✏️ Crear personalizado</Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }

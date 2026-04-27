@@ -11,6 +11,7 @@ import {
   WizardSlotSchema,
   type WizardSlot,
 } from '@beproud/validation';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function BlockModePicker() {
   const router = useRouter();
@@ -36,7 +37,10 @@ export default function BlockModePicker() {
   if (!parsed.success) {
     return (
       <SafeAreaView className="flex-1 bg-brand-800">
-        <Header title="Bloque inválido" onBack={() => router.back()} />
+        <Header
+          title="Bloque inválido"
+          onBack={() => backOrReplace(router, '/routine-design' as never)}
+        />
         <Text className="px-6 text-brand-300">Bloque no válido.</Text>
       </SafeAreaView>
     );
@@ -77,7 +81,7 @@ export default function BlockModePicker() {
     <SafeAreaView className="flex-1 bg-brand-800">
       <Header
         title={`${TIME_SLOT_ICONS[slot]} ${TIME_SLOT_LABELS[slot]}`}
-        onBack={() => router.back()}
+        onBack={() => backOrReplace(router, '/routine-design' as never)}
       />
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text className="mb-2 text-xl font-extrabold text-white">

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import FollowersList from '@/features/follows/screens/FollowersList';
 import { fetchProfileByUsername } from '@beproud/api';
+import { backOrReplace } from '@/lib/navigation/back';
 
 export default function FollowersRoute() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function FollowersRoute() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, `/user/${username}` as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

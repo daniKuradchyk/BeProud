@@ -24,7 +24,9 @@ type Props = {
   onClose: () => void;
   /** Datos de la tarea a completar (los recibe TaskRow desde la rutina). */
   routineTaskId: string;
-  taskId: string;
+  /** Pasar exactamente uno: del catálogo o personalizado (Fase 15). */
+  taskId?: string | null;
+  userTaskId?: string | null;
   baseTitle: string;
   basePoints: number;
   baseHint: string | null;
@@ -43,6 +45,7 @@ export default function CompleteSheet({
   onClose,
   routineTaskId,
   taskId,
+  userTaskId,
   baseTitle,
   basePoints,
   baseHint,
@@ -110,7 +113,8 @@ export default function CompleteSheet({
       const path = await uploadTaskPhoto(user.id, blob, ext);
       await createTaskCompletion({
         routineTaskId,
-        taskId,
+        taskId:     taskId     ?? null,
+        userTaskId: userTaskId ?? null,
         photoPath: path,
         pointsAwarded: basePoints,
         isPublic,
@@ -135,7 +139,16 @@ export default function CompleteSheet({
       });
     } catch (e) {
       console.warn('[completions] onConfirm error', e);
-      setError(e instanceof Error ? e.message : 'No se pudo completar la tarea.');
+      // Extrae mensaje + código (Supabase StorageError trae statusCode/error)
+      // para que el usuario nos pueda reportar exactamente qué falla.
+      let msg = 'No se pudo completar la tarea.';
+      if (e instanceof Error) msg = e.message;
+      else if (typeof e === 'object' && e !== null) {
+        const err = e as { message?: string; statusCode?: string; error?: string };
+        msg = err.message ?? err.error ?? msg;
+        if (err.statusCode) msg = `[${err.statusCode}] ${msg}`;
+      }
+      setError(msg);
       setStage('preview');
     }
   }

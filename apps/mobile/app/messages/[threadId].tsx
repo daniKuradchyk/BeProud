@@ -23,6 +23,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import Avatar from '@/components/Avatar';
 import MessageBubble from '@/features/messages/components/MessageBubble';
 import { useSession } from '@/lib/session';
+import { backOrReplace } from '@/lib/navigation/back';
 import {
   fetchThreadMessages,
   markThreadRead,
@@ -174,7 +175,7 @@ export default function ThreadDetail() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Volver"
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/messages' as never)}
           hitSlop={12}
           className="px-2 py-1"
         >

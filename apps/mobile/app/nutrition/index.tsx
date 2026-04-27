@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { RefreshableScrollView } from '@/components/primitives';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -13,6 +14,7 @@ import {
 import { MEAL_TYPE_ORDER } from '@beproud/validation';
 import DailyRings from '@/components/nutrition/DailyRings';
 import MealCard from '@/components/nutrition/MealCard';
+import { backOrReplace } from '@/lib/navigation/back';
 
 function todayLocalISO(): string {
   const d = new Date();
@@ -105,10 +107,11 @@ export default function NutritionDashboard() {
         </Text>
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.push('/profile' as never)}
+          accessibilityLabel="Completar biometría"
+          onPress={() => router.push('/settings/biometrics' as never)}
           className="mt-2 self-start rounded-full bg-amber-300 px-3 py-1.5 active:bg-amber-200"
         >
-          <Text className="text-xs font-extrabold text-brand-900">Ir al perfil</Text>
+          <Text className="text-xs font-extrabold text-brand-900">Completar biometría</Text>
         </Pressable>
       </View>
     );
@@ -118,7 +121,7 @@ export default function NutritionDashboard() {
     <SafeAreaView className="flex-1 bg-brand-800">
       <View className="flex-row items-center px-4 py-3">
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => backOrReplace(router, '/(tabs)/routine' as never)}
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Volver"
@@ -140,7 +143,7 @@ export default function NutritionDashboard() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <RefreshableScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <View className="mb-3 flex-row items-center justify-between rounded-2xl border border-brand-700 bg-brand-800/60 p-3">
           <Pressable
             accessibilityRole="button"
@@ -193,7 +196,7 @@ export default function NutritionDashboard() {
         >
           <Text className="text-sm font-bold text-brand-100">Ver objetivos</Text>
         </Pressable>
-      </ScrollView>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 }
